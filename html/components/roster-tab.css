@@ -8,7 +8,7 @@
 
 #Teams table.Team { width: 100%; border-spacing: 0px; } 
 #Teams table.Team tr.Name>td { background: #ccc; border-radius: 12px 12px 0px 0px; font-size: 200%; font-weight: bold; } 
-#Teams table.Team tr.League>td, #Teams table.Team tr.LTeam>td, #Teams table.Team tr.Color>td { text-align: left; }
+#Teams table.Team tr.League>td, #Teams table.Team tr.LTeam>td, #Teams table.Team tr.Color>td { width: 50%; text-align: left; }
 #Teams table.Team tr.League>td:first-of-type, #Teams table.Team tr.LTeam>td:first-of-type,
 #Teams table.Team tr.Color>td:first-of-type { text-align: right; }
 #Teams .Logo { max-height: 4em; }
