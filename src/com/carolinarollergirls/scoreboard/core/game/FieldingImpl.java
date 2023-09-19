@@ -124,6 +124,10 @@ public class FieldingImpl extends ParentOrderedScoreBoardEventProviderImpl<Field
         if (prop == UNEND_BOX_TRIP && getCurrentBoxTrip() != null && !getCurrentBoxTrip().isCurrent()) {
             getCurrentBoxTrip().unend();
         }
+        if (prop == END_BOX_TRIP && getCurrentBoxTrip() != null) {
+            getCurrentBoxTrip().end();
+            itemRemoved(BOX_TRIP, getCurrentBoxTrip(), source);
+        }
     }
 
     @Override

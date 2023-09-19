@@ -6,6 +6,7 @@ import java.util.Iterator;
 import com.carolinarollergirls.scoreboard.core.interfaces.Clock;
 import com.carolinarollergirls.scoreboard.core.interfaces.Game;
 import com.carolinarollergirls.scoreboard.core.interfaces.Period;
+import com.carolinarollergirls.scoreboard.event.Child;
 import com.carolinarollergirls.scoreboard.event.Command;
 import com.carolinarollergirls.scoreboard.event.ConditionalScoreBoardListener;
 import com.carolinarollergirls.scoreboard.event.ScoreBoardEvent;
@@ -18,9 +19,13 @@ import com.carolinarollergirls.scoreboard.utils.ScoreBoardClock;
 
 public class ClockImpl extends ScoreBoardEventProviderImpl<Clock> implements Clock {
     public ClockImpl(Game g, String i) {
-        super(g, g.getId() + "_" + i, Game.CLOCK);
+        this(g, i, Game.CLOCK);
+    }
+    public ClockImpl(Game g, String i, Child<Clock> type) {
+        super(g, g.getId() + "_" + i, type);
         game = g;
         subId = i;
+        isBoxClock = (type == Game.BOX_CLOCK);
         addProperties(props);
         // initialize types
         if (i == ID_PERIOD || i == ID_INTERMISSION) {
@@ -107,7 +112,11 @@ public class ClockImpl extends ScoreBoardEventProviderImpl<Clock> implements Clo
         @Override
         public void scoreBoardChange(ScoreBoardEvent<?> event) {
             // Get default values from current settings or use hardcoded values
-            setCountDirectionDown(Boolean.parseBoolean(game.get(Game.RULE, subId + ".ClockDirection").getValue()));
+            if(game.get(Game.RULE, subId + ".ClockDirection") != null) {
+                setCountDirectionDown(Boolean.parseBoolean(game.get(Game.RULE, subId + ".ClockDirection").getValue()));
+            } else if(isBoxClock) {
+                setCountDirectionDown(true);
+            }
             if (subId.equals(ID_PERIOD)) {
                 setMaximumTime(game.getLong(Rule.PERIOD_DURATION));
             } else if (subId.equals(ID_JAM)) {
@@ -120,6 +129,8 @@ public class ClockImpl extends ScoreBoardEventProviderImpl<Clock> implements Clo
                 } else {
                     setMaximumTime(game.getLong(Rule.LINEUP_DURATION));
                 }
+            } else if(isBoxClock) {
+                setMaximumTime(game.getLong(Rule.PENALTIES_DURATION));
             } else {
                 setMaximumTime(DEFAULT_MAXIMUM_TIME);
             }
@@ -302,6 +313,7 @@ public class ClockImpl extends ScoreBoardEventProviderImpl<Clock> implements Clo
 
     protected long lastTime;
     protected boolean isRunning = false;
+    protected boolean isBoxClock = true;
 
     private Game game;
     private String subId;

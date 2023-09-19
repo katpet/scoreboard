@@ -14,6 +14,7 @@ public interface BoxTrip extends ScoreBoardEventProvider {
 
     public void end();
     public void unend();
+    public void restart();
 
     public Team getTeam();
 
@@ -25,6 +26,9 @@ public interface BoxTrip extends ScoreBoardEventProvider {
     public Fielding getEndFielding();
     public boolean endedBetweenJams();
     public boolean endedAfterSP();
+    public int getPeriodNumber();
+    public int getPenaltyCount();
+    public void setPenaltyCount(int count);
 
     public static Collection<Property<?>> props = new ArrayList<>();
 
@@ -44,6 +48,8 @@ public interface BoxTrip extends ScoreBoardEventProvider {
     public static final Value<Long> JAM_CLOCK_START = new Value<>(Long.class, "JamClockStart", 0L, props);
     public static final Value<Long> JAM_CLOCK_END = new Value<>(Long.class, "JamClockEnd", 0L, props);
     public static final Value<Long> DURATION = new Value<>(Long.class, "Duration", 0L, props);
+    public static final Value<Integer> PERIOD_NUMBER = new Value<>(Integer.class, "PeriodNumber", 1, props);
+    public static final Value<Integer> PENALTY_COUNT = new Value<>(Integer.class, "PenaltyCount", 1, props);
 
     public static final Child<Fielding> FIELDING = new Child<>(Fielding.class, "Fielding", props);
     public static final Child<Penalty> PENALTY = new Child<>(Penalty.class, "Penalty", props);

@@ -80,6 +80,7 @@ public enum Rule {
     PENALTIES_FILE(new StringRule("Penalties.DefinitionFile",
                                   "File that contains the penalty code definitions to be used",
                                   "/config/penalties/wftda2018.json")),
+    PENALTIES_DURATION(new TimeRule("Penalties.Duration", "Duration of penalty", "0:30")),
     FO_LIMIT(new IntegerRule(
         "Penalties.NumberToFoulout",
         "After how many penalties a skater has fouled out of the game. Note that the software currently does not support more than 9 penalties per skater.",

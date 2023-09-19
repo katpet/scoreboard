@@ -31,6 +31,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 import com.carolinarollergirls.scoreboard.core.game.GameImpl;
+import com.carolinarollergirls.scoreboard.core.interfaces.BoxTrip;
 import com.carolinarollergirls.scoreboard.core.interfaces.Expulsion;
 import com.carolinarollergirls.scoreboard.core.interfaces.Fielding;
 import com.carolinarollergirls.scoreboard.core.interfaces.FloorPosition;
@@ -143,6 +144,16 @@ public class StatsbookExporter extends Thread {
         fillBoxHead(box);
 
         for (Team t : game.getAll(Game.TEAM)) {
+            List<BoxTrip> boxtrips = new ArrayList<>(t.getAll(Team.BOX_TRIP));
+            Collections.sort(boxtrips, new Comparator<BoxTrip>() {
+                @Override
+                public int compare(BoxTrip b1, BoxTrip b2) {
+                    return b1.get(BoxTrip.START_JAM_NUMBER).compareTo(b2.get(BoxTrip.START_JAM_NUMBER));
+                }
+            });
+
+            fillBox(box, boxtrips, t);
+                
             List<Skater> skaters = new ArrayList<>(t.getAll(Team.SKATER));
             Collections.sort(skaters, new Comparator<Skater>() {
                 @Override
@@ -154,12 +165,16 @@ public class StatsbookExporter extends Thread {
             });
             int igrfRowId = 13;
             int penRowId = 3;
+            int boxRowP1Id = 4;
+            int boxRowP2Id = 47;
             for (Skater s : skaters) {
                 fillSkater(igrf.getRow(igrfRowId), s, clock);
-                fillPenalties(penalties.getRow(penRowId), penalties.getRow(penRowId + 1), s);
+                fillPenalties(penalties.getRow(penRowId), penalties.getRow(penRowId + 1), box.getRow(boxRowP1Id), box.getRow(boxRowP2Id), s);
                 if (!s.getFlags().startsWith("B")) {
                     igrfRowId++;
                     penRowId += 2;
+                    boxRowP1Id += 2;
+                    boxRowP2Id += 2;
                 }
                 if (igrfRowId > 32) { break; } // no more space
             }
@@ -325,6 +340,102 @@ public class StatsbookExporter extends Thread {
         setCell(row, 28, pbt[1][1]);
     }
 
+    private void fillBox(Sheet box, List<BoxTrip> sortedBoxtrips, Team t) {
+        int boxRowP1Id = 3;
+        int boxRowP2Id = 46;
+        String teamId = t.getProviderId();
+
+        // Box trips are expected to have been soted by jam number already
+        for (BoxTrip bt : sortedBoxtrips) {
+            int colOffset = 0;
+            if(teamId == Team.ID_2) {
+                colOffset += 17;
+            }
+            List<Period> periods = new ArrayList<>(game.getAll(Game.PERIOD));
+            int period = bt.getPeriodNumber();
+            if(!(period == 1 || period == 2))
+                continue;
+            String skaterNumber = "";
+            String role = bt.get(BoxTrip.START_FIELDING).getCurrentRole().toString().substring(0, 1);
+            int startJamNumber = bt.get(BoxTrip.START_JAM_NUMBER);
+            int endJamNumber = bt.get(BoxTrip.END_JAM_NUMBER);
+            long duration = bt.get(BoxTrip.DURATION);
+            long[] timeAtEndOfJams = {0,0,0};
+
+            // Compute values for the "Time at End of Jam" columns in the Penalty Box sheet, if applicable.
+            // These three columns are for when the box trip extends beyond the end of a jam, for up to three jams.
+            // Compute time based on the the length of the trip, and length of each jam that the box trip extends through.
+            if(startJamNumber != endJamNumber) {
+                long jamClockStart = bt.get(BoxTrip.JAM_CLOCK_START);
+                for(int j=0; j < endJamNumber - startJamNumber; j++) {
+                    if(j > 2)
+                        break; // quit after filling in three colums of times
+                    Jam jam = periods.get(period-1).getJam(startJamNumber+j);
+                    long jamDuration = 0;
+                    if(jam == null) {
+                        // Maybe jam is in next period
+                        if(period < periods.size()) {
+                            jam = periods.get(period).getJam(startJamNumber+j);
+                        }
+                    }
+                    if(jam != null) {
+                        jamDuration = jam.getDuration();
+                    } else {
+                        // missing jam?
+                    }
+                    if( j == 0) {
+                        timeAtEndOfJams[j] = duration - (jamDuration - jamClockStart);
+                    }
+                    if( j > 0 ) {
+                        timeAtEndOfJams[j] = timeAtEndOfJams[j-1] - jamDuration;
+                    }
+                }
+            }
+
+            // If the skater serving in the box changed, we'll emit both numbers separated by a slash
+            Fielding startFielding = bt.get(BoxTrip.START_FIELDING);
+            Fielding endFielding = bt.get(BoxTrip.END_FIELDING);
+            String endSkaterNumber = "";
+            if( startFielding != null ) {
+                skaterNumber = startFielding.get(Fielding.SKATER_NUMBER);
+            }
+            if( endFielding != null ) {
+                endSkaterNumber = endFielding.get(Fielding.SKATER_NUMBER);
+            }
+            if(skaterNumber != endSkaterNumber && endSkaterNumber != "") {
+                skaterNumber += " / " + endSkaterNumber;
+            }
+
+            Row row = (period == 1) ? box.getRow(boxRowP1Id) : box.getRow(boxRowP2Id);
+            if(period == 1) {
+                boxRowP1Id++;
+            } else {
+                boxRowP2Id++;
+            }
+
+            // Compute In, Stand, Done times based on penalty duration
+            long inTime = 0;
+            long standTime = ((duration - 10000) > 0) ? duration - 10000 : 0;
+            long doneTime = duration;
+
+            setCell(row, 0+colOffset, period); // Period
+            setCell(row, 1+colOffset, bt.get(BoxTrip.START_JAM_NUMBER)); // Jam #
+            setCell(row, 2+colOffset, bt.get(BoxTrip.START_BETWEEN_JAMS) ? "X" : ""); // Btwn Jams
+            setCell(row, 3+colOffset, bt.getTeam().get(Team.UNIFORM_COLOR)); // Team
+            setCell(row, 4+colOffset, skaterNumber); // Skater #
+            setCell(row, 5+colOffset, role); // Pos
+            setCell(row, 6+colOffset, inTime/1000); // In
+            setCell(row, 7+colOffset, standTime/1000); // Stand
+            setCell(row, 8+colOffset, doneTime/1000); // Done
+
+            for(int i=0; i<3; i++) {
+                if( timeAtEndOfJams[i] > 0) {
+                    setCell(row, 9+i+colOffset, timeAtEndOfJams[i]/1000); // Time at End of Jam (three columns)
+                }
+            }
+        }
+    }
+
     private void fillSkater(Row row, Skater s, Sheet clock) {
         String teamId = s.getTeam().getProviderId();
         String flags = s.getFlags();
@@ -341,7 +452,7 @@ public class StatsbookExporter extends Thread {
         }
     }
 
-    private void fillPenalties(Row penRow, Row jamRow, Skater s) {
+    private void fillPenalties(Row penRow, Row jamRow, Row boxP1Row, Row boxP2Row, Skater s) {
         for (Penalty p : s.getAll(Skater.PENALTY)) {
             int num = p.getNumber();
             int period = p.getPeriodNumber();
@@ -351,6 +462,16 @@ public class StatsbookExporter extends Thread {
             if (Team.ID_2.equals(s.getTeam().getProviderId())) { col += 15; }
             setCell(penRow, col, p.get(Penalty.CODE));
             setCell(jamRow, col, p.getJamNumber());
+        }
+
+        int penaltyCountP1 = s.getPenaltyCount(1);
+        int penaltyCountP2 = s.getPenaltyCount(2); // P2 count includes P1 count, so it's a total count;
+        int pcol = (s.getTeam().getProviderId() == Team.ID_1) ? 16 : 33;
+        if(penaltyCountP1 > 0) {
+            setCell(boxP1Row, pcol, penaltyCountP1);
+        }
+        if(penaltyCountP2 > 0) {
+           setCell(boxP2Row, pcol, penaltyCountP2);
         }
     }
 

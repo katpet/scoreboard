@@ -22,6 +22,7 @@ public interface CurrentGame extends MirrorScoreBoardEventProvider<Game> {
     public static interface CurrentPenalty extends MirrorScoreBoardEventProvider<Penalty> {}
     public static interface CurrentPosition extends MirrorScoreBoardEventProvider<Position> {}
     public static interface CurrentBoxTrip extends MirrorScoreBoardEventProvider<BoxTrip> {}
+    public static interface CurrentBoxSeat extends MirrorScoreBoardEventProvider<BoxSeat> {}
     public static interface CurrentPeriod extends MirrorScoreBoardEventProvider<Period> {}
     public static interface CurrentJam extends MirrorScoreBoardEventProvider<Jam> {}
     public static interface CurrentTeamJam extends MirrorScoreBoardEventProvider<TeamJam> {}

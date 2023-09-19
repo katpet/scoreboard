@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import com.carolinarollergirls.scoreboard.core.game.GameImpl;
 import com.carolinarollergirls.scoreboard.core.interfaces.BoxTrip;
+import com.carolinarollergirls.scoreboard.core.interfaces.BoxSeat;
 import com.carolinarollergirls.scoreboard.core.interfaces.Clock;
 import com.carolinarollergirls.scoreboard.core.interfaces.CurrentGame;
 import com.carolinarollergirls.scoreboard.core.interfaces.Expulsion;
@@ -143,6 +144,7 @@ public class CurrentGameImpl extends MirrorScoreBoardEventProviderImpl<Game, Cur
         classMap.put(Penalty.class, CurrentPenalty.class);
         classMap.put(Position.class, CurrentPosition.class);
         classMap.put(BoxTrip.class, CurrentBoxTrip.class);
+        classMap.put(BoxSeat.class, CurrentBoxSeat.class);
         classMap.put(Period.class, CurrentPeriod.class);
         classMap.put(Jam.class, CurrentJam.class);
         classMap.put(TeamJam.class, CurrentTeamJam.class);
@@ -152,7 +154,7 @@ public class CurrentGameImpl extends MirrorScoreBoardEventProviderImpl<Game, Cur
         classMap.put(Official.class, CurrentOfficial.class);
         classMap.put(Expulsion.class, CurrentExpulsion.class);
 
-        addPropertyMapping(Game.CLOCK, Game.TEAM, Game.PERIOD, Period.JAM, Game.REF, Game.NSO, Game.EXPULSION);
+        addPropertyMapping(Game.CLOCK, Game.BOX_CLOCK, Game.TEAM, Game.PERIOD, Period.JAM, Game.REF, Game.NSO, Game.EXPULSION);
     }
 
     @Override
@@ -186,7 +188,7 @@ public class CurrentGameImpl extends MirrorScoreBoardEventProviderImpl<Game, Cur
         CurrentTeamImpl(ScoreBoardEventProvider parent, Team sourceElement) { super(parent, sourceElement); }
         @Override
         protected void fillMaps() {
-            addPropertyMapping(Team.SKATER, Team.POSITION, Team.BOX_TRIP);
+            addPropertyMapping(Team.SKATER, Team.POSITION, Team.BOX_TRIP, Team.BOX_SEAT);
         }
     }
     public static class CurrentSkaterImpl
@@ -208,6 +210,10 @@ public class CurrentGameImpl extends MirrorScoreBoardEventProviderImpl<Game, Cur
     public static class CurrentBoxTripImpl
         extends MirrorScoreBoardEventProviderImpl<BoxTrip, CurrentBoxTrip> implements CurrentBoxTrip {
         CurrentBoxTripImpl(ScoreBoardEventProvider parent, BoxTrip sourceElement) { super(parent, sourceElement); }
+    }
+    public static class CurrentBoxSeatImpl
+        extends MirrorScoreBoardEventProviderImpl<BoxSeat, CurrentBoxSeat> implements CurrentBoxSeat {
+        CurrentBoxSeatImpl(ScoreBoardEventProvider parent, BoxSeat sourceElement) { super(parent, sourceElement); }
     }
     public static class CurrentPeriodImpl
         extends MirrorScoreBoardEventProviderImpl<Period, CurrentPeriod> implements CurrentPeriod {

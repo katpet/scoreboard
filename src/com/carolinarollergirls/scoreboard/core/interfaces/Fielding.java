@@ -44,4 +44,5 @@ public interface Fielding extends ParentOrderedScoreBoardEventProvider<Fielding>
 
     public static final Command ADD_BOX_TRIP = new Command("AddBoxTrip", props);
     public static final Command UNEND_BOX_TRIP = new Command("UnendBoxTrip", props);
+    public static final Command END_BOX_TRIP = new Command("EndBoxTrip", props);
 }

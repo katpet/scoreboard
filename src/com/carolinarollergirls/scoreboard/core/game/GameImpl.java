@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.jr.ob.JSON;
 
+import com.carolinarollergirls.scoreboard.core.interfaces.BoxSeat;
 import com.carolinarollergirls.scoreboard.core.interfaces.Clock;
 import com.carolinarollergirls.scoreboard.core.interfaces.Expulsion;
 import com.carolinarollergirls.scoreboard.core.interfaces.Game;
@@ -85,6 +86,12 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         add(CLOCK, new ClockImpl(this, Clock.ID_TIMEOUT));
         add(CLOCK, new ClockImpl(this, Clock.ID_INTERMISSION));
         addWriteProtection(CLOCK);
+        for (Team t : getAll(TEAM)) {
+            for(BoxSeat bs : t.getAll(Team.BOX_SEAT)) {
+                add(BOX_CLOCK, new ClockImpl(this, bs.getBoxClockId(), Game.BOX_CLOCK));
+            }
+        }
+        addWriteProtection(BOX_CLOCK);
         addWriteProtectionOverride(EXPULSION, Source.NON_WS);
         addWriteProtectionOverride(IN_JAM, Source.NON_WS);
         addWriteProtectionOverride(IN_OVERTIME, Source.NON_WS);
@@ -184,6 +191,22 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
                         }
                     }
                 }));
+ 
+        // handle auto-end box trips when penalty box clocks finish
+        for (Team t : getAll(TEAM)) {
+            for(BoxSeat bs : t.getAll(Team.BOX_SEAT)) {
+                addScoreBoardListener(new ConditionalScoreBoardListener<>(
+                    Clock.class, bs.getBoxClock().getId(), Clock.RUNNING, Boolean.FALSE, new ScoreBoardListener() {
+                        @Override
+                        public void scoreBoardChange(ScoreBoardEvent<?> event) {
+                            Clock pc = bs.getBoxClock();
+                            if (pc.isTimeAtEnd()) {
+                                bs.endBox();
+                            }
+                        }
+                }));
+            }
+        }
 
         // handle changes to the ruleset (if following a preset ruleset)
         scoreBoard.getRulesets().addScoreBoardListener(
@@ -407,6 +430,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
     public ScoreBoardEventProvider create(Child<? extends ScoreBoardEventProvider> prop, String id, Source source) {
         synchronized (coreLock) {
             if (prop == CLOCK) { return new ClockImpl(this, id); }
+            if (prop == BOX_CLOCK) { return new ClockImpl(this, id, Game.BOX_CLOCK); }
             if (prop == TEAM) { return new TeamImpl(this, id); }
             if (prop == Period.JAM) { return new JamImpl(this, Integer.parseInt(id)); }
             if (prop == PERIOD) {
@@ -849,6 +873,11 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
     @Override
     public Clock getClock(String id) {
         return get(CLOCK, id);
+    }
+
+    @Override
+    public Clock getBoxClock(String id) {
+        return get(BOX_CLOCK, id);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.carolinarollergirls.scoreboard.core.game;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import com.carolinarollergirls.scoreboard.core.interfaces.BoxTrip;
@@ -31,6 +33,7 @@ public class BoxTripImpl extends ScoreBoardEventProviderImpl<BoxTrip> implements
         set(START_BETWEEN_JAMS, !game.isInJam() && !getTeam().hasFieldingAdvancePending() && f.isCurrent());
         set(JAM_CLOCK_START, startedBetweenJams() ? 0L : game.getClock(Clock.ID_JAM).getTimeElapsed());
         set(IS_CURRENT, true);
+        set(PERIOD_NUMBER, game.getCurrentPeriodNumber());
         initReferences();
         add(FIELDING, f);
         f.updateBoxTripSymbols();
@@ -203,6 +206,12 @@ public class BoxTripImpl extends ScoreBoardEventProviderImpl<BoxTrip> implements
     }
 
     @Override
+    public void restart() {
+        set(WALLTIME_START, ScoreBoardClock.getInstance().getCurrentWalltime());
+        set(PERIOD_NUMBER, game.getCurrentPeriodNumber());
+    }
+
+    @Override
     public void end() {
         set(IS_CURRENT, false);
         set(WALLTIME_END, ScoreBoardClock.getInstance().getCurrentWalltime());
@@ -268,6 +277,29 @@ public class BoxTripImpl extends ScoreBoardEventProviderImpl<BoxTrip> implements
     @Override
     public boolean endedAfterSP() {
         return get(END_AFTER_S_P);
+    }
+    @Override
+    public int getPeriodNumber() {
+        int periodNum = get(PERIOD_NUMBER);
+        if(periodNum == 0) {
+            // defer to period of first penalty if one wasn't recorded
+            // when box trip was created - maybe in older version?
+            List<Penalty> penalties = new ArrayList<>(getAll(BoxTrip.PENALTY));
+            if(penalties.size() > 0) {
+                periodNum = penalties.get(0).get(Penalty.PERIOD_NUMBER);
+            } else {
+                periodNum = 1;
+            }
+        }        
+        return periodNum;
+    }
+    @Override
+    public int getPenaltyCount() {
+        return get(PENALTY_COUNT);
+    }
+    @Override
+    public void setPenaltyCount(int count) {
+        set(PENALTY_COUNT, count);
     }
 
     private Game game;

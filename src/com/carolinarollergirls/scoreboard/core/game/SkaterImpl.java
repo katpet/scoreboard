@@ -337,6 +337,24 @@ public class SkaterImpl extends ScoreBoardEventProviderImpl<Skater> implements S
         set(PREPARED_SKATER, ps);
     }
 
+    @Override
+    public int getPenaltyCount(int period) {
+        if(period == 1) {
+            return get(PENALTY_COUNT_P1);
+        } else if(period == 2) {
+            return get(PENALTY_COUNT_P2);
+        }
+        return 0;
+    }    
+    @Override
+    public void setPenaltyCount(int period, int pc) {
+        if(period == 1) {
+            set(PENALTY_COUNT_P1, pc);
+        } else if(period == 2) {
+            set(PENALTY_COUNT_P2, pc);
+        }
+    }    
+
     protected Team team;
     private Game game;
 }

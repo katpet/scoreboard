@@ -57,6 +57,7 @@ public interface Game extends ScoreBoardEventProvider {
     public void clockUndo(boolean replace);
 
     public Clock getClock(String id);
+    public Clock getBoxClock(String id);
 
     public Team getTeam(String id);
 
@@ -140,6 +141,7 @@ public interface Game extends ScoreBoardEventProvider {
     public static final Value<String> EXPORT_BLOCKED_BY = new Value<>(String.class, "ExportBlockedBy", "", props);
 
     public static final Child<Clock> CLOCK = new Child<>(Clock.class, "Clock", props);
+    public static final Child<Clock> BOX_CLOCK = new Child<>(Clock.class, "BoxClock", props);
     public static final Child<Team> TEAM = new Child<>(Team.class, "Team", props);
     public static final Child<ValWithId> RULE = new Child<>(ValWithId.class, "Rule", props);
     public static final Child<PenaltyCode> PENALTY_CODE = new Child<>(PenaltyCode.class, "PenaltyCode", props);

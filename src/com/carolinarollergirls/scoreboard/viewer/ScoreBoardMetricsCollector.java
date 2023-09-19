@@ -34,7 +34,15 @@ public class ScoreBoardMetricsCollector extends Collector {
         GaugeMetricFamily clockNumber =
             new GaugeMetricFamily("crg_scoreboard_clock_number", "Number on scoreboard clock.", Arrays.asList("clock"));
         mfs.add(clockNumber);
+
         for (MirrorScoreBoardEventProvider<Clock> c : sb.getCurrentGame().getAllMirrors(Game.CLOCK)) {
+            clockTime.addMetric(Arrays.asList(c.get(Clock.NAME)), (float) c.get(Clock.TIME) / 1000);
+            clockInvertedTime.addMetric(Arrays.asList(c.get(Clock.NAME)), (float) c.get(Clock.INVERTED_TIME) / 1000);
+            clockRunning.addMetric(Arrays.asList(c.get(Clock.NAME)), c.get(Clock.RUNNING) ? 1 : 0);
+            clockNumber.addMetric(Arrays.asList(c.get(Clock.NAME)), c.get(Clock.NUMBER));
+        }
+
+        for (MirrorScoreBoardEventProvider<Clock> c : sb.getCurrentGame().getAllMirrors(Game.BOX_CLOCK)) {
             clockTime.addMetric(Arrays.asList(c.get(Clock.NAME)), (float) c.get(Clock.TIME) / 1000);
             clockInvertedTime.addMetric(Arrays.asList(c.get(Clock.NAME)), (float) c.get(Clock.INVERTED_TIME) / 1000);
             clockRunning.addMetric(Arrays.asList(c.get(Clock.NAME)), c.get(Clock.RUNNING) ? 1 : 0);

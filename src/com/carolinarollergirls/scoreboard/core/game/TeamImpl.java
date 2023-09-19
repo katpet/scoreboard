@@ -7,6 +7,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
+import com.carolinarollergirls.scoreboard.core.interfaces.BoxSeat;
 import com.carolinarollergirls.scoreboard.core.interfaces.BoxTrip;
 import com.carolinarollergirls.scoreboard.core.interfaces.Clock;
 import com.carolinarollergirls.scoreboard.core.interfaces.Fielding;
@@ -47,7 +48,11 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
         addProperties(props);
         addProperties(preparedProps);
         for (FloorPosition fp : FloorPosition.values()) { add(POSITION, new PositionImpl(this, fp)); }
+        for(BoxSeat.BoxSeatId boxSeatId : BoxSeat.BoxSeatId.values() ) {
+            add(BOX_SEAT, new BoxSeatImpl(this, boxSeatId));
+        }
         addWriteProtection(POSITION);
+        addWriteProtection(BOX_SEAT);
         addWriteProtectionOverride(FIELDING_ADVANCE_PENDING, Source.NON_WS);
         setCopy(LEAGUE_NAME, this, PREPARED_TEAM, LEAGUE_NAME, false, PREPARED_TEAM_CONNECTED);
         setCopy(TEAM_NAME, this, PREPARED_TEAM, TEAM_NAME, false, PREPARED_TEAM_CONNECTED);
@@ -357,6 +362,7 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
         synchronized (coreLock) {
             advanceFieldings(); // if this hasn't been manually triggered between jams, do it now
             getCurrentTrip().set(ScoringTrip.CURRENT, true);
+            unpauseBoxClocks();
         }
     }
 
@@ -397,12 +403,28 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
             }
 
             for (Skater s : getAll(SKATER)) { s.updateEligibility(); }
+
+            pauseBoxClocks();
         }
     }
 
     private void advanceFieldings() {
         set(FIELDING_ADVANCE_PENDING, false);
         updateTeamJams();
+    }
+
+    private void pauseBoxClocks() {
+        for(BoxSeat bs : getAll(BOX_SEAT)) {
+            bs.stopBox();
+        }        
+    }
+
+    private void unpauseBoxClocks() {
+        for(BoxSeat bs : getAll(BOX_SEAT)) {
+            if(bs.started()) {
+                bs.startBox();
+            }
+        }        
     }
 
     @Override
@@ -734,6 +756,16 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
     @Override
     public Position getPosition(FloorPosition fp) {
         return fp == null ? null : get(POSITION, fp.toString());
+    }
+
+    @Override
+    public BoxSeat getBoxSeat(BoxSeat.BoxSeatId id) {
+        for(BoxSeat bs : getAll(Team.BOX_SEAT)) {
+            if(bs.getProviderId() == id.toString()) {
+                return bs;
+            }
+        }
+        return null;
     }
 
     @Override

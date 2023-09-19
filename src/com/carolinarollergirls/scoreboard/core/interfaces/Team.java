@@ -63,6 +63,7 @@ public interface Team extends ScoreBoardEventProvider, TimeoutOwner {
     public void removeSkater(String id);
 
     public Position getPosition(FloorPosition fp);
+    public BoxSeat getBoxSeat(BoxSeat.BoxSeatId id);
 
     public void field(Skater s, Role r);
     public void field(Skater s, Role r, TeamJam tj);
@@ -144,6 +145,7 @@ public interface Team extends ScoreBoardEventProvider, TimeoutOwner {
     public static final Child<BoxTrip> BOX_TRIP = new Child<>(BoxTrip.class, "BoxTrip", props);
     public static final Child<ScoreAdjustment> SCORE_ADJUSTMENT =
         new Child<>(ScoreAdjustment.class, "ScoreAdjustment", props);
+    public static final Child<BoxSeat> BOX_SEAT = new Child<>(BoxSeat.class, "BoxSeat", props);
 
     public static final Command ADD_TRIP = new Command("AddTrip", props);
     public static final Command REMOVE_TRIP = new Command("RemoveTrip", props);

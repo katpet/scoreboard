@@ -61,6 +61,7 @@ public class RulesetsImpl extends ScoreBoardEventProviderImpl<Rulesets> implemen
         RulesetImpl sevens = new RulesetImpl(this, "Sevens", root, "SevensRuleset");
         sevens.setRule("Intermission.Durations", "60:00");
         sevens.setRule("Penalties.NumberToFoulout", "4");
+        sevens.setRule("Penalties.Duration", "30");
         sevens.setRule("Period.Duration", "21:00");
         sevens.setRule("Period.Number", "1");
         sevens.setRule("Team.OfficialReviews", "0");

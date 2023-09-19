@@ -1,5 +1,6 @@
 package com.carolinarollergirls.scoreboard.core.current;
 
+import com.carolinarollergirls.scoreboard.core.current.CurrentGameImpl.CurrentBoxSeatImpl;
 import com.carolinarollergirls.scoreboard.core.current.CurrentGameImpl.CurrentBoxTripImpl;
 import com.carolinarollergirls.scoreboard.core.current.CurrentGameImpl.CurrentClockImpl;
 import com.carolinarollergirls.scoreboard.core.current.CurrentGameImpl.CurrentExpulsionImpl;
@@ -14,6 +15,7 @@ import com.carolinarollergirls.scoreboard.core.current.CurrentGameImpl.CurrentSk
 import com.carolinarollergirls.scoreboard.core.current.CurrentGameImpl.CurrentTeamImpl;
 import com.carolinarollergirls.scoreboard.core.current.CurrentGameImpl.CurrentTeamJamImpl;
 import com.carolinarollergirls.scoreboard.core.current.CurrentGameImpl.CurrentTimeoutImpl;
+import com.carolinarollergirls.scoreboard.core.interfaces.BoxSeat;
 import com.carolinarollergirls.scoreboard.core.interfaces.BoxTrip;
 import com.carolinarollergirls.scoreboard.core.interfaces.Clock;
 import com.carolinarollergirls.scoreboard.core.interfaces.Expulsion;
@@ -51,6 +53,9 @@ public class MirrorFactoryImpl implements MirrorFactory {
         }
         if (mirrored instanceof Position) {
             return (MirrorScoreBoardEventProvider<T>) new CurrentPositionImpl(parent, (Position) mirrored);
+        }
+        if (mirrored instanceof BoxSeat) {
+            return (MirrorScoreBoardEventProvider<T>) new CurrentBoxSeatImpl(parent, (BoxSeat) mirrored);
         }
         if (mirrored instanceof BoxTrip) {
             return (MirrorScoreBoardEventProvider<T>) new CurrentBoxTripImpl(parent, (BoxTrip) mirrored);
