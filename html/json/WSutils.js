@@ -43,6 +43,23 @@ function WSActiveButton(key, button) {
   WS.Register(key, function (k, v) {
     button.toggleClass('Active', isTrue(v));
   });
+  button.toggleClass('Active', isTrue(WS.state[key]));
+  return button;
+}
+
+function WSChangeButton(key, value, button) {
+  'use strict';
+  button.on('click', function () {
+    WS.Set(key, value, 'change');
+  });
+  return button;
+}
+
+function WSSetButton(key, value, button) {
+  'use strict';
+  button.on('click', function () {
+    WS.Set(key, typeof value === 'function' ? value() : value);
+  });
   return button;
 }
 
@@ -54,6 +71,7 @@ function WSControl(key, element) {
   WS.Register(key, function (k, v) {
     element.val(v);
   });
+  element.val(WS.state[key]);
   return element;
 }
 
@@ -62,5 +80,15 @@ function WSDisplay(key, element) {
   WS.Register(key, function (k, v) {
     element.text(v);
   });
+  element.text(WS.state[key]);
+  return element;
+}
+
+function WSTextToggle(key, element, trueText, falseText) {
+  'use strict';
+  WS.Register(key, function (k, v) {
+    element.text(isTrue(v) ? trueText : falseText);
+  });
+  element.text(isTrue(WS.state[key]) ? trueText : falseText);
   return element;
 }

@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.CopyOption;
 import java.nio.file.DirectoryStream;
@@ -40,6 +41,7 @@ public class Main extends Logger {
 
     public Main(String argv[]) {
         parseArgv(argv);
+        logFile.getParentFile().mkdirs();
         setLogger(this);
         importFromOldVersion();
         start();
@@ -49,7 +51,6 @@ public class Main extends Logger {
     }
 
     public void start() {
-        setSystemProperties();
         try {
             if (!Version.load()) { stop(null); }
         } catch (IOException e) { stop(e); }
@@ -90,10 +91,6 @@ public class Main extends Logger {
         });
     }
 
-    private void setSystemProperties() {
-        System.getProperties().setProperty("twitter4j.loggerFactory", "twitter4j.internal.logging.NullLoggerFactory");
-    }
-
     private void stop(Exception ex) {
         if (ex != null) { Logger.printStackTrace(ex); }
         Logger.printMessage("Fatal error.   Exiting in 15 seconds.");
@@ -111,6 +108,9 @@ public class Main extends Logger {
         } else {
             System.err.println(msg);
         }
+        try (FileWriter fileWriter = new FileWriter(logFile, true)) {
+            fileWriter.write(msg + System.lineSeparator());
+        } catch (IOException e) {}
     }
 
     private void parseArgv(String[] argv) {
@@ -248,6 +248,8 @@ public class Main extends Logger {
     private int port = 8000;
 
     private String importPath = null;
+
+    private File logFile = new File(BasePath.get(), "logs/crg.log");
 
     private static ScoreBoard scoreBoard;
 }

@@ -43,6 +43,8 @@ public interface Game extends ScoreBoardEventProvider {
 
     public boolean isInSuddenScoring();
 
+    public boolean isLastTwoMinutes();
+
     public boolean isOfficialScore();
     public void setOfficialScore(boolean official);
 
@@ -135,6 +137,7 @@ public interface Game extends ScoreBoardEventProvider {
     public static final Value<Boolean> JSON_EXISTS = new Value<>(Boolean.class, "JsonExists", false, props);
     public static final Value<Boolean> CLOCK_DURING_FINAL_SCORE =
         new Value<>(Boolean.class, "ClockDuringFinalScore", false, props);
+    public static final Value<String> EXPORT_BLOCKED_BY = new Value<>(String.class, "ExportBlockedBy", "", props);
 
     public static final Child<Clock> CLOCK = new Child<>(Clock.class, "Clock", props);
     public static final Child<Team> TEAM = new Child<>(Team.class, "Team", props);

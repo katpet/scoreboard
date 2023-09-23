@@ -20,7 +20,16 @@
 #Teams table.Skaters tr:last-of-type>td:last-of-type { border-radius: 0px 0px 12px 0px; } 
 #Teams table.Skaters tbody tr:nth-of-type(2n)>td { background: #ddd; } 
 #Teams table.Skaters col.Name { width: 50%; } 
-#Teams table.Skaters col.RosterNumber { width: 20%; } 
+#Teams table.Skaters col.RosterNumber { width: 15%; } 
+#Teams table.Skaters col.Pronouns { width: 15%; } 
 
 #Teams table.Skaters th.Title { font-size: 150%; } 
 #Teams table.Skaters th#skaterCount { font-size: 100%; font-weight: normal; } 
+
+#Teams table.Skaters tr[flag='ALT'] { display:none; }
+#Teams table.Skaters tr[role='Pivot'] { background-color: #00ee00 !important; } 
+#Teams table.Skaters tr[role='Pivot']>td { background: #00ee00 !important; }
+#Teams table.Skaters tr[role='Jammer'] { background-color: #00cc00 !important; } 
+#Teams table.Skaters tr[role='Jammer']>td { background: #00cc00 !important; }
+#Teams table.Skaters tr[role='Blocker'] { background-color: #70ff70 !important; } 
+#Teams table.Skaters tr[role='Blocker']>td { background: #70ff70 !important; } 

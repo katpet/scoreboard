@@ -26,6 +26,7 @@ function createTeamTimeTab(tab, gameId) {
   $('<tr><td/></tr>').appendTo(table).children('td').append(createTeamTable(gameId));
   $('<tr><td/></tr>').appendTo(table).children('td').append(createTimeTable(gameId));
   table.children('tr').children('td').children('table').addClass('TabTable');
+  $('<tr><td/></tr>').appendTo(table).children('td').append(createScoreAdjustmentTable(gameId));
 
   var sk1 = $('<div>').addClass('SKSheet').appendTo(tab);
   var sk2 = $('<div>').addClass('SKSheet').appendTo(tab);
@@ -46,6 +47,13 @@ function setClockControls(value) {
   $('#ShowClockControlsButton').prop('checked', value);
   $('label.ShowClockControlsButton').toggleClass('ui-state-active', value);
   $('#TeamTime').find('tr.Control').toggleClass('Show', value);
+}
+
+function setScoreAdjustments(value) {
+  'use strict';
+  $('#UseScoreAdjustmentsButton').prop('checked', value);
+  $('label.UseScoreAdjustmentsButton').toggleClass('ui-state-active', value);
+  $('#ScoreAdjustments').toggleClass('Show', value);
 }
 
 function setTabBar(value) {
@@ -84,7 +92,7 @@ function createMetaControlTable(gameId) {
     });
   $('<a>')
     .text(
-      'Key Control Edit mode enabled.  Buttons do not operate in this mode.  Move the mouse over a button, then press a normal key (not ESC, Enter, F1, etc.) to assign.  Backspace/Delete to remove.'
+      'Key Control Edit mode enabled.  Keys do not operate in this mode but clicking buttons still DOES perform the action.  Move the mouse over a button, then press a normal key (not ESC, Enter, F1, etc.) to assign.  Backspace/Delete to remove.'
     )
     .appendTo(helpTd);
 
@@ -133,6 +141,24 @@ function createMetaControlTable(gameId) {
       var operator = $('#operatorId').text();
       if (operator) {
         WS.Set('ScoreBoard.Settings.Setting(ScoreBoard.Operator__' + operator + '.StartStopButtons)', value);
+      }
+    });
+
+  $('<label>')
+    .addClass('UseScoreAdjustmentsButton')
+    .text('Use Score Adjustments')
+    .attr('for', 'UseScoreAdjustmentsButton')
+    .appendTo(buttonsTd);
+  $('<input type="checkbox">')
+    .attr('id', 'UseScoreAdjustmentsButton')
+    .appendTo(buttonsTd)
+    .button()
+    .on('click', function () {
+      var value = this.checked;
+      setScoreAdjustments(value);
+      var operator = $('#operatorId').text();
+      if (operator) {
+        WS.Set('ScoreBoard.Settings.Setting(ScoreBoard.Operator__' + operator + '.ScoreAdjustments)', value);
       }
     });
 
@@ -1054,6 +1080,7 @@ function createTeamTable(gameId) {
           var button = $('<button>')
             .attr('number', number)
             .attr('skater', k.Skater)
+            .attr('color', WS.state[prefix + '.Skater(' + k.Skater + ').Color'] || '')
             .attr('id', 'Team' + team + pos + k.Skater)
             .addClass('KeyControl')
             .append($('<span>').text(number))
@@ -1066,6 +1093,9 @@ function createTeamTable(gameId) {
         }
         setValue(WS.state[prefix + '.Position(' + pos + ').Skater']);
       });
+      WS.Register(prefix + '.Skater(*).Color', function (k, v) {
+        container.children('[skater="' + k.Skater + '"]').attr('color', v || '');
+      });
       WS.Register(prefix + '.Position(' + pos + ').Skater', function (k, v) {
         setValue(v);
       });
@@ -1074,7 +1104,7 @@ function createTeamTable(gameId) {
 
     var jammerSelectTd = jammerTr.children('td');
     $('<span>').text('Jammer:').appendTo(jammerSelectTd);
-    makeSkaterSelector('Jammer').appendTo(jammerSelectTd);
+    makeSkaterSelector('Jammer').addClass('JammerSelect').appendTo(jammerSelectTd);
 
     var jammerBoxButton = WSActiveButton(prefix + '.Position(Jammer).PenaltyBox', $('<button>'))
       .append($('<span>').text('Box'))
@@ -1085,7 +1115,7 @@ function createTeamTable(gameId) {
 
     var pivotSelectTd = pivotTr.children('td');
     $('<span>').text('Piv/4th Bl:').appendTo(pivotSelectTd);
-    makeSkaterSelector('Pivot').appendTo(pivotSelectTd);
+    makeSkaterSelector('Pivot').addClass('PivotSelect').appendTo(pivotSelectTd);
 
     var pivotBoxButton = WSActiveButton(prefix + '.Position(Pivot).PenaltyBox', $('<button>'))
       .append($('<span>').text('Box'))
@@ -1337,6 +1367,7 @@ function createJamDialog(gameId) {
   $('<a>').text('Points').addClass('Title').appendTo(headers.children('td:eq(1)').addClass('Title'));
   $('<a>').text('Duration').addClass('Title').appendTo(headers.children('td:eq(2)').addClass('Title'));
   $('<a>').text('PC at end').addClass('Title').appendTo(headers.children('td:eq(3)').addClass('Title'));
+  $('<a>').text('Delete').addClass('Title').appendTo(headers.children('td:eq(4)').addClass('Title'));
   var footer = $('<tr><td colspan="4"></td><td></td><td></td>').addClass('Jam').attr('nr', 999).appendTo(tableTemplate);
   $('<span>').text('Upcoming').appendTo(footer.children('td:eq(0)'));
   $('<button>')
@@ -1351,9 +1382,11 @@ function createJamDialog(gameId) {
     [
       'ScoreBoard.Game(' + gameId + ').Period(*).Jam(*).Duration',
       'ScoreBoard.Game(' + gameId + ').Period(*).Jam(*).Number',
-      'ScoreBoard.Game(' + gameId + ').Period(*).Jam(*).StarPass',
       'ScoreBoard.Game(' + gameId + ').Period(*).Jam(*).PeriodClockDisplayEnd',
+      'ScoreBoard.Game(' + gameId + ').Period(*).Jam(*).WalltimeStart',
+      'ScoreBoard.Game(' + gameId + ').Period(*).Jam(*).WalltimeEnd',
       'ScoreBoard.Game(' + gameId + ').Period(*).Jam(*).TeamJam(*).JamScore',
+      'ScoreBoard.Game(' + gameId + ').Period(*).Jam(*).TeamJam(*).OsOffset',
     ],
     function (k, v) {
       var per = k.Period;
@@ -1387,16 +1420,17 @@ function createJamDialog(gameId) {
           .append($('<td>').addClass('Duration'))
           .append($('<td>').addClass('PC'))
           .append(
-            $('<td>').append(
-              $('<button>')
-                .text('Delete')
-                .addClass('delete')
-                .button()
-                .on('click', function () {
-                  //TODO: confirmation popup
-                  WS.Set(prefix + '.Delete', true);
-                })
-            )
+            $('<td>')
+              .append(
+                $('<button>')
+                  .text('Delete')
+                  .addClass('delete')
+                  .button()
+                  .on('click', function () {
+                    WS.Set(prefix + '.Delete', true);
+                  })
+              )
+              .append($('<span>').text('has points').addClass('noDeletePoints Hide'))
           )
           .append(
             $('<td>').append(
@@ -1428,17 +1462,13 @@ function createJamDialog(gameId) {
         if (key === 'JamScore') {
           row.find('td.Points .' + k.TeamJam).text(v);
         }
-        if (key === 'StarPass' || key === 'JamScore') {
-          row
-            .find('button.delete')
-            .prop(
-              'disabled',
-              isTrue(
-                WS.state[prefix + '.StarPass'] ||
-                  WS.state[prefix + '.TeamJam(1).JamScore'] > 0 ||
-                  WS.state[prefix + '.TeamJam(2).JamScore'] > 0
-              )
-            );
+        if (key === 'OsOffset' || key === 'JamScore' || key === 'WalltimeEnd') {
+          var isRunning = WS.state[prefix + '.WalltimeEnd'] === 0 && WS.state[prefix + '.WalltimeStart'] > 0;
+          var hasPoints =
+            WS.state[prefix + '.TeamJam(1).JamScore'] + WS.state[prefix + '.TeamJam(1).OsOffset'] != 0 ||
+            WS.state[prefix + '.TeamJam(2).JamScore'] + WS.state[prefix + '.TeamJam(2).OsOffset'] != 0;
+          row.find('button.delete').toggleClass('Hide', isRunning || hasPoints);
+          row.find('.noDeletePoints').toggleClass('Hide', !hasPoints);
         }
         if (key === 'Duration') {
           if (WS.state[prefix + '.WalltimeEnd'] === 0 && WS.state[prefix + '.WalltimeStart'] > 0) {
@@ -1878,4 +1908,153 @@ function createTimeDialog(gameId, clock) {
   });
 
   return dialog;
+}
+
+function createScoreAdjustmentTable(gameId) {
+  'use strict';
+  WS.Register([
+    'ScoreBoard.Game(' + gameId + ').Period(*).Jam(*).TeamJam(*).CurrentTripNumber',
+    'ScoreBoard.Game(' + gameId + ').Period(*).Jam(*).TeamJam(*).ScoringTrip(*).Id',
+  ]);
+
+  var div = $('<div>').attr('id', 'ScoreAdjustments');
+
+  $.each(['1', '2'], function () {
+    var team = String(this);
+    var prefix = 'ScoreBoard.Game(' + gameId + ').Team(' + team + ').';
+
+    $('<div>')
+      .addClass('Team' + team)
+      .append(
+        $('<div>')
+          .addClass('ScoreAdjustment Active')
+          .append($('<span>').text(' New Adjustment: '))
+          .append(
+            WSChangeButton(
+              prefix + 'ActiveScoreAdjustmentAmount',
+              -1,
+              $('<button>')
+                .attr('id', 'Team' + team + 'AdjDown')
+                .addClass('KeyControl')
+                .append($('<span>').text('-1'))
+                .button()
+            )
+          )
+          .append(WSDisplay(prefix + 'ActiveScoreAdjustmentAmount', $('<span>').addClass('Amount')))
+          .append(
+            WSChangeButton(
+              prefix + 'ActiveScoreAdjustmentAmount',
+              +1,
+              $('<button>')
+                .attr('id', 'Team' + team + 'AdjUp')
+                .addClass('KeyControl')
+                .append($('<span>').text('+1'))
+                .button()
+            )
+          )
+          .append(
+            WSSetButton(
+              prefix + 'ActiveScoreAdjustment',
+              null,
+              $('<button>')
+                .attr('id', 'Team' + team + 'AdjStash')
+                .addClass('KeyControl')
+                .append($('<span>').text('Stash'))
+                .button()
+            )
+          )
+      )
+      .appendTo(div);
+  });
+
+  function addJamOptions(select, maxNumber) {
+    select.empty();
+    for (var i = 1; i <= maxNumber; i++) {
+      select.append($('<option>').text(i).val(i));
+    }
+    select.val(maxNumber - 1);
+    return select;
+  }
+
+  function addTripOptions(select, periodNumber, jamNumber, team) {
+    select.empty();
+    var prefix = 'ScoreBoard.Game(' + gameId + ').Period(' + periodNumber + ').Jam(' + jamNumber + ').TeamJam(' + team + ').';
+    var maxNumber = Number(WS.state[prefix + 'CurrentTripNumber']);
+    for (var i = 1; i <= maxNumber; i++) {
+      select.append(
+        $('<option>')
+          .text(i === 1 ? 'In' : i)
+          .val(WS.state[prefix + 'ScoringTrip(' + i + ').Id'])
+      );
+    }
+    select.val(WS.state[prefix + 'ScoringTrip(' + maxNumber + ').Id']);
+    return select;
+  }
+
+  WS.Register('ScoreBoard.Game(' + gameId + ').Team(*).ScoreAdjustment(*)', function (k, v) {
+    var row = div.children('.Team' + k.Team).children('[adjId=' + k.ScoreAdjustment + ']');
+    var prefix = 'ScoreBoard.Game(' + gameId + ').Team(' + k.Team + ').ScoreAdjustment(' + k.ScoreAdjustment + ').';
+
+    if (v != null && !row.length) {
+      var tripSelect = $('<select>').append($('<option>').text('?').val(''));
+
+      row = $('<div>')
+        .attr('adjId', k.ScoreAdjustment)
+        .addClass('ScoreAdjustment')
+        .append($('<span>').addClass('Amount'))
+        .append($('<span>').text('Points recorded '))
+        .append($('<span>').addClass('During'))
+        .append($('<span>').text(' P'))
+        .append($('<span>').addClass('Period'))
+        .append($('<span>').text(' J'))
+        .append($('<span>').addClass('Jam'))
+        .append($('<span>').text('. Assign to Jam '))
+        .append(
+          addJamOptions($('<select>'), WS.state[prefix + 'JamNumberRecorded']).on('change', function () {
+            addTripOptions(tripSelect, WS.state[prefix + 'PeriodNumberRecorded'], $(this).val(), k.Team);
+          })
+        )
+        .append($('<span>').text(' Trip '))
+        .append(
+          addTripOptions(tripSelect, WS.state[prefix + 'PeriodNumberRecorded'], Number(WS.state[prefix + 'JamNumberRecorded']) - 1, k.Team)
+        )
+        .append($('<span>').text(' '))
+        .append(
+          WSSetButton(
+            prefix + 'AppliedTo',
+            function () {
+              return tripSelect.val();
+            },
+            $('<button>').text('Apply').button()
+          )
+        )
+        .append(WSSetButton(prefix + 'Discard', true, $('<button>').text('Discard').button()))
+        .appendTo(div.children('.Team' + k.Team));
+    }
+
+    switch (k.field) {
+      case 'Id':
+        if (v == null) {
+          row.remove();
+        }
+        break;
+      case 'Amount':
+        row.children('.Amount').text(v);
+        break;
+      case 'RecordedDuringJam':
+        row.children('.During').text(isTrue(v) ? 'during' : 'after');
+        break;
+      case 'PeriodNumberRecorded':
+        row.children('.Period').text(v);
+        break;
+      case 'JamNumberRecorded':
+        row.children('.Jam').text(v);
+        break;
+      case 'Open':
+        row.toggleClass('Hide', isTrue(v));
+        break;
+    }
+  });
+
+  return div;
 }

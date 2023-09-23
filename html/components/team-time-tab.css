@@ -58,6 +58,7 @@
 #TeamTime .ui-controlgroup>button:last-of-type { border-radius: 0px 6px 6px 0px; } 
 #TeamTime .ui-controlgroup>button:only-of-type { border-radius: 6px; } 
 #TeamTime .ui-controlgroup>button>span { padding-top: 0.3em; padding-bottom: 0.3em; } 
+#TeamTime .JammerSelect [color="Jammer"]:not(.Active), #TeamTime .PivotSelect [color="Pivot"]:not(.Active) { background: #888; color: #fff; }
 
 #TeamTime table.Team button.Box.Hide { display: none } 
 #TeamTime table.Team button.Box.Active { color: #000; background: #F33; } 
@@ -76,6 +77,14 @@
 #TeamTime table.Time tr.TimeSet td.Button button>span { padding: 0.3em .6em; } 
 
 #TeamTime tr.Control:not(.Show) { display: none; } 
+
+#ScoreAdjustments:not(.Show) { display: none; }
+#ScoreAdjustments > div { float: left; width: calc( 50% - 1em ); background: #ccc; border-radius: 12px; padding: 0.4em; margin: 1px; }
+#ScoreAdjustments > div > div { width: 100%; } 
+#ScoreAdjustments > div > div:not(.Active) { border-top: 1px dashed black; }
+#ScoreAdjustments .Hide { display: none; }
+#ScoreAdjustments button { margin: 2px; }
+#ScoreAdjustments .Amount { margin: 2px; font-weight: bold; }
 
 div.NumberDialog table.Period:not(.Show) { display: none; } 
 div.NumberDialog table tr:nth-child(2n+1) { background-color: #d8d8d8; } 

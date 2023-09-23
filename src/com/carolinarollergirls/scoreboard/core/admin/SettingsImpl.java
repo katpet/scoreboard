@@ -39,6 +39,7 @@ public class SettingsImpl extends ScoreBoardEventProviderImpl<Settings> implemen
         set("ScoreBoard.Operator_Default.StartStopButtons", "false");
         set("ScoreBoard.Operator_Default.TabBar", "true");
         set("ScoreBoard.Operator_Default.ReplaceButton", "false");
+        set("ScoreBoard.Operator_Default.ScoreAdjustments", "false");
         set(ScoreBoard.SETTING_USE_LT, "false");
         set(ScoreBoard.SETTING_STATSBOOK_INPUT, "");
         set(ScoreBoard.SETTING_AUTO_START, "");
@@ -48,7 +49,7 @@ public class SettingsImpl extends ScoreBoardEventProviderImpl<Settings> implemen
         set(ScoreBoard.SETTING_CLOCK_AFTER_TIMEOUT, Clock.ID_LINEUP);
         set(Clock.SETTING_SYNC, "true");
         set(Team.SETTING_DISPLAY_NAME, Team.OPTION_LEAGUE_NAME);
-        set(Game.SETTING_DEFAULT_NAME_FORMAT, "%G %d %1 vs. %2 (%s: %S)");
+        set(Game.SETTING_DEFAULT_NAME_FORMAT, "%d %G %1 vs. %2 (%s: %S)");
         set("ScoreBoard.Intermission.PreGame", "Time To Derby");
         set("ScoreBoard.Intermission.Intermission", "Intermission");
         set("ScoreBoard.Intermission.Unofficial", "Unofficial Score");

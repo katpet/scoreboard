@@ -36,6 +36,7 @@ import com.carolinarollergirls.scoreboard.event.ConditionalScoreBoardListener;
 import com.carolinarollergirls.scoreboard.event.ScoreBoardEvent;
 import com.carolinarollergirls.scoreboard.event.ScoreBoardEventProvider;
 import com.carolinarollergirls.scoreboard.event.ScoreBoardEventProvider.Flag;
+import com.carolinarollergirls.scoreboard.event.ScoreBoardEventProvider.Source;
 import com.carolinarollergirls.scoreboard.event.ScoreBoardEventProviderImpl;
 import com.carolinarollergirls.scoreboard.event.ScoreBoardListener;
 import com.carolinarollergirls.scoreboard.rules.Rule;
@@ -79,6 +80,7 @@ public class GameImplTests {
     @Before
     public void setUp() throws Exception {
         ScoreBoardClock.getInstance().stop();
+        GameImpl.setQuickClockThreshold(0L);
         sb = new ScoreBoardImpl();
         sb.postAutosaveUpdate();
         g = (GameImpl) sb.getCurrentGame().get(CurrentGame.GAME);
@@ -102,6 +104,7 @@ public class GameImplTests {
     @After
     public void tearDown() throws Exception {
         ScoreBoardClock.getInstance().start(false);
+        GameImpl.setQuickClockThreshold(1000L);
         // Check all started batches were ended.
         assertEquals(0, batchLevel);
     }
@@ -775,6 +778,7 @@ public class GameImplTests {
     @Test
     public void testStopJam_lineupEarlyInIntermission() {
         fastForwardPeriod();
+        GameImpl.setQuickClockThreshold(1000L);
         assertFalse(pc.isRunning());
         assertEquals(1, pc.getNumber());
         assertFalse(jc.isRunning());
@@ -971,6 +975,7 @@ public class GameImplTests {
         assertEquals(Timeout.Owners.NONE, g.getTimeoutOwner());
         checkLabels(Game.ACTION_START_JAM, Game.ACTION_STOP_TO, Game.ACTION_RE_TIMEOUT,
                     Game.UNDO_PREFIX + Game.ACTION_RE_TIMEOUT);
+        GameImpl.setQuickClockThreshold(1000L);
 
         g.setTimeoutOwner(Timeout.Owners.OTO);
         g.timeout();
@@ -2118,7 +2123,7 @@ public class GameImplTests {
         TeamJam tj = j.getTeamJam(Team.ID_1);
 
         // Add some points without adding a trip or lead.
-        team1.set(Team.TRIP_SCORE, 4, Flag.CHANGE);
+        team1.set(Team.TRIP_SCORE, 4, Source.WS, Flag.CHANGE);
         assertEquals(2, tj.getCurrentScoringTrip().getNumber());
 
         g.stopJamTO();
@@ -2131,7 +2136,7 @@ public class GameImplTests {
         advance(1000);
 
         // Add some points between jams without adding a trip or lead.
-        team1.set(Team.TRIP_SCORE, 4, Flag.CHANGE);
+        team1.set(Team.TRIP_SCORE, 4, Source.WS, Flag.CHANGE);
         assertEquals(2, tj.getCurrentScoringTrip().getNumber());
 
         g.startJam();
@@ -2142,7 +2147,7 @@ public class GameImplTests {
 
         // Add some points without adding a trip or lead during an overtime jam
         assertEquals(1, tj.getCurrentScoringTrip().getNumber());
-        team1.set(Team.TRIP_SCORE, 1);
+        team1.set(Team.TRIP_SCORE, 1, Source.WS);
         assertEquals(1, tj.getCurrentScoringTrip().getNumber());
     }
 

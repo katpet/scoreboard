@@ -88,12 +88,9 @@ public class JamImpl extends NumberedScoreBoardEventProviderImpl<Jam> implements
                     Logger.printMessage("Refusing to delete current Jam.");
                     return;
                 }
-                if (getTeamJam(Team.ID_1).getJamScore() > 0 || getTeamJam(Team.ID_2).getJamScore() > 0) {
+                if (getTeamJam(Team.ID_1).getJamScore() + getTeamJam(Team.ID_1).getOsOffset() != 0 ||
+                    getTeamJam(Team.ID_2).getJamScore() + getTeamJam(Team.ID_2).getOsOffset() != 0) {
                     Logger.printMessage("Refusing to delete Jam with points. Remove points first.");
-                    return;
-                }
-                if (get(STAR_PASS)) {
-                    Logger.printMessage("Refusing to delete Jam with Star Pass. Remove SP first.");
                     return;
                 }
 
@@ -111,6 +108,17 @@ public class JamImpl extends NumberedScoreBoardEventProviderImpl<Jam> implements
                     set(NUMBER, 1, Source.RENUMBER, Flag.CHANGE);
                     game.updateTeamJams();
                 }
+            } else if (prop == INSERT_TIMEOUT_AFTER) {
+                Timeout newTo = new TimeoutImpl(this);
+                newTo.set(Timeout.RUNNING, false);
+                newTo.set(Timeout.WALLTIME_START, get(WALLTIME_END));
+                newTo.set(Timeout.WALLTIME_END, get(WALLTIME_END));
+                newTo.set(Timeout.PERIOD_CLOCK_ELAPSED_START, getNext().get(PERIOD_CLOCK_ELAPSED_START));
+                newTo.set(Timeout.PERIOD_CLOCK_ELAPSED_END, get(PERIOD_CLOCK_ELAPSED_START));
+                newTo.set(Timeout.PERIOD_CLOCK_END,
+                          getPeriod().getGame().getClock(Clock.ID_PERIOD).get(Clock.MAXIMUM_TIME) -
+                              get(PERIOD_CLOCK_ELAPSED_END));
+                getPeriod().add(Period.TIMEOUT, newTo);
             }
         }
     }

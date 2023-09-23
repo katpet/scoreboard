@@ -201,19 +201,14 @@ function createEditTeamTable(element, teamPrefix, isGameTeam) {
   }
 
   var controlTable = _crgUtils.createRowTable(3).appendTo(teamTable.find('tr.Control>td')).addClass('Control');
-  var waitingOnUpload = '';
   var logoSelect = $('<select>').append($('<option value="">No Logo</option>')).appendTo(controlTable.find('td:eq(0)'));
   logoSelect.on('change', function () {
     WS.Set(teamPrefix + '.Logo', logoSelect.val() === '' ? '' : '/images/teamlogo/' + logoSelect.val());
   });
   WS.Register('ScoreBoard.Media.Format(images).Type(teamlogo).File(*).Name', function (k, v) {
-    var val = logoSelect.val(); // Record this before we potentially remove and re-add it.
+    var val = WS.state[teamPrefix + '.Logo'].substring('/images/teamlogo/'.length);
     logoSelect.children('[value="' + k.File + '"]').remove();
     if (v != null) {
-      if (waitingOnUpload === k.File) {
-        val = k.File;
-        waitingOnUpload = '';
-      }
       var option = $('<option>').attr('name', v).attr('value', k.File).text(v);
       _windowFunctions.appendAlphaSortedByAttr(logoSelect, option, 'name', 1);
     }
@@ -234,7 +229,7 @@ function createEditTeamTable(element, teamPrefix, isGameTeam) {
         fd.append('f', data.files[0], data.files[0].name);
         data.files[0] = fd.get('f');
         data.submit();
-        waitingOnUpload = fd.get('f').name;
+        WS.Set(teamPrefix + '.Logo', '/images/teamlogo/' + fd.get('f').name);
       },
       fail: function (e, data) {
         /* jshint -W117 */
@@ -272,46 +267,53 @@ function createEditTeamTable(element, teamPrefix, isGameTeam) {
     .appendTo(teamTable.find('tr.Skaters>td'))
     .append('<col class="RosterNumber">')
     .append('<col class="Name">')
+    .append('<col class="Pronouns">')
     .append('<col class="Flags">')
     .append('<col class="Button">')
     .append('<thead/><tbody/>')
     .children('thead')
-    .append('<tr><th></th><th class="Title">Skaters</th><th id="skaterCount"></th><th></th></tr>')
-    .append('<tr><th>Number</th><th>Name</th><th>Flags</th><th>Add</th>')
+    .append('<tr><th></th><th class="Title">Skaters</th><th></th><th id="skaterCount"></th><th></th></tr>')
+    .append('<tr><th>Number</th><th>Name</th><th>Pronouns</th><th>Flags</th><th>Add</th>')
     .append('<tr class="AddSkater"><th/><th/><th/><th/><th/></tr>')
-    .append('<tr><th colspan="4"><hr/></th></tr>')
+    .append('<tr><th colspan="5"><hr/></th></tr>')
     .end();
 
-  var addSkater = function (number, name, flags, id) {
+  var addSkater = function (number, name, pronouns, flags, id) {
     id = id || newUUID();
     WS.Set(teamPrefix + '.Skater(' + id + ').RosterNumber', number);
     WS.Set(teamPrefix + '.Skater(' + id + ').Name', name);
+    WS.Set(teamPrefix + '.Skater(' + id + ').Pronouns', pronouns);
     WS.Set(teamPrefix + '.Skater(' + id + ').Flags', flags);
   };
 
   var newSkaterNumber = $('<input type="text" size="5">').addClass('RosterNumber').appendTo(skatersTable.find('tr.AddSkater>th:eq(0)'));
   var newSkaterName = $('<input type="text" size="20">').addClass('Name').appendTo(skatersTable.find('tr.AddSkater>th:eq(1)'));
-  var newSkaterFlags = $('<select>').addClass('Flags').appendTo(skatersTable.find('tr.AddSkater>th:eq(2)'));
+  var newSkaterPronouns = $('<input type="text" size="10">').addClass('Pronouns').appendTo(skatersTable.find('tr.AddSkater>th:eq(2)'));
+  var newSkaterFlags = $('<select>').addClass('Flags').appendTo(skatersTable.find('tr.AddSkater>th:eq(3)'));
   var newSkaterButton = $('<button>')
     .text('Add Skater')
     .button({ disabled: true })
     .addClass('AddSkater')
-    .appendTo(skatersTable.find('tr.AddSkater>th:eq(3)'))
+    .appendTo(skatersTable.find('tr.AddSkater>th:eq(4)'))
     .on('click', function () {
-      addSkater(newSkaterNumber.val(), newSkaterName.val(), newSkaterFlags.val());
+      addSkater(newSkaterNumber.val(), newSkaterName.val(), newSkaterPronouns.val(), newSkaterFlags.val());
       newSkaterNumber.val('').trigger('focus');
-      newSkaterFlags.val('');
       newSkaterName.val('');
+      newSkaterPronouns.val('');
+      newSkaterFlags.val('');
       $(this).trigger('blur');
       newSkaterButton.button('option', 'disabled', true);
     });
-  newSkaterName.add(newSkaterNumber).on('keyup', function (event) {
-    newSkaterButton.button('option', 'disabled', !newSkaterName.val() && !newSkaterNumber.val());
-    if (!newSkaterButton.button('option', 'disabled') && 13 === event.which) {
-      // Enter
-      newSkaterButton.trigger('click');
-    }
-  });
+  newSkaterName
+    .add(newSkaterNumber)
+    .add(newSkaterPronouns)
+    .on('keyup', function (event) {
+      newSkaterButton.button('option', 'disabled', !newSkaterName.val() && !newSkaterNumber.val());
+      if (!newSkaterButton.button('option', 'disabled') && 13 === event.which) {
+        // Enter
+        newSkaterButton.trigger('click');
+      }
+    });
   newSkaterFlags.append($('<option>').attr('value', '').text('Skater'));
   newSkaterFlags.append($('<option>').attr('value', 'ALT').text('Not Skating'));
   newSkaterFlags.append($('<option>').attr('value', 'C').text('Captain'));
@@ -343,14 +345,16 @@ function createEditTeamTable(element, teamPrefix, isGameTeam) {
         continue;
       }
       var name = $.trim(cols[1]);
+      var pronouns = $.trim(cols[cols.length - 1]);
       // Assume same number means same skater.
       var id = knownNumbers[number];
-      addSkater(number, name, '', id);
+      addSkater(number, name, pronouns, '', id);
     }
     return false;
   };
   newSkaterNumber.on('paste', pasteHandler);
   newSkaterName.on('paste', pasteHandler);
+  newSkaterPronouns.on('paste', pasteHandler);
 
   var updateSkaterCount = function () {
     var count = 0;
@@ -382,24 +386,22 @@ function createEditTeamTable(element, teamPrefix, isGameTeam) {
           .attr('skaterid', k.Skater)
           .append('<td class="RosterNumber">')
           .append('<td class="Name">')
+          .append('<td class="Pronouns">')
           .append('<td class="Flags">')
           .append('<td class="Remove">');
         var numberInput = $('<input type="text" size="5">').appendTo(skaterRow.children('td.RosterNumber'));
+        numberInput.on('change', function () {
+          WS.Set(skaterPrefix + '.RosterNumber', numberInput.val());
+          skaterRow.attr('skaternum', WS.state[skaterPrefix + '.RosterNumber']);
+        });
         var nameInput = $('<input type="text" size="20">').appendTo(skaterRow.children('td.Name'));
         nameInput.on('change', function () {
           WS.Set(skaterPrefix + '.Name', nameInput.val());
         });
-        $('<button>')
-          .text('Remove')
-          .addClass('RemoveSkater')
-          .button()
-          .on('click', function () {
-            createTeamsSkaterRemoveDialog(WS.state[teamPrefix + '.Name'], skaterPrefix);
-          })
-          .appendTo(skaterRow.children('td.Remove'));
-        numberInput.on('change', function () {
-          WS.Set(skaterPrefix + '.RosterNumber', numberInput.val());
-          skaterRow.attr('skaternum', WS.state[skaterPrefix + '.RosterNumber']);
+        var pronounInput = $('<input type="text" size="10">').appendTo(skaterRow.children('td.Pronouns'));
+        pronounInput.on('change', function () {
+          WS.Set(skaterPrefix + '.Pronouns', pronounInput.val());
+          skaterRow.attr('skaternum', WS.state[skaterPrefix + '.Pronoun']);
         });
         var skaterFlags = $('<select>').appendTo(skaterRow.children('td.Flags'));
         skaterFlags.append($('<option>').attr('value', '').text('Skater'));
@@ -411,6 +413,14 @@ function createEditTeamTable(element, teamPrefix, isGameTeam) {
         skaterFlags.on('change', function () {
           WS.Set(skaterPrefix + '.Flags', skaterFlags.val());
         });
+        $('<button>')
+          .text('Remove')
+          .addClass('RemoveSkater')
+          .button()
+          .on('click', function () {
+            createTeamsSkaterRemoveDialog(WS.state[teamPrefix + '.Name'], skaterPrefix);
+          })
+          .appendTo(skaterRow.children('td.Remove'));
         _windowFunctions.appendAlphaSortedByAttr(skatersTable.children('tbody'), skaterRow, 'skaternum');
       }
 
@@ -459,6 +469,7 @@ function createEditTeamTable(element, teamPrefix, isGameTeam) {
       teamPrefix + '.Skater(*).Flags',
       teamPrefix + '.Skater(*).Name',
       teamPrefix + '.Skater(*).RosterNumber',
+      teamPrefix + '.Skater(*).Pronouns',
     ],
     handleTeamUpdate
   );
@@ -540,7 +551,6 @@ function createAlternateNamesDialog(prefix) {
         { label: 'overlay (Video Overlay)', value: 'overlay' },
         { label: 'scoreboard (Scoreboard Display)', value: 'scoreboard' },
         { label: 'whiteboard (Penalty Whiteboard)', value: 'whiteboard' },
-        { label: 'twitter (Twitter)', value: 'twitter' },
       ],
       appendTo: dialog.parent(),
     })
