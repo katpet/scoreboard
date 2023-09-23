@@ -6,15 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 
     <script type="text/javascript" src="/external/jquery/jquery.js"></script>
-
     <script type="text/javascript" src="/json/WS.js"></script>
 
     <link rel="stylesheet" type="text/css" href="/external/jquery-mobile/jquery.mobile.css" />
     <script type="text/javascript" src="/external/jquery-mobile/jquery.mobile.js"></script>
 
     <script type="text/javascript" src="/javascript/timeconversions.js"></script>
-    <link rel="stylesheet" type="text/css" href="index.css" />
+    <script type="text/javascript" src="/components/pbt-input.js"></script>
     <script type="text/javascript" src="index.js"></script>
+
+    <link rel="stylesheet" href="/components/pbt-input.css" type="text/css" />
   </head>
 
   <body sbContext="ScoreBoard.CurrentGame">
@@ -22,25 +23,24 @@
       <div id="title" data-role="header" data-theme="b">
         <h1>Penalty Box Timer</h1>
       </div>
-      <div data-role="content" id="UsePBTDialog"></div>
 
       <div data-role="content" class="ui-body">
         <ul data-role="listview">
-          <li><a href="#JammerTimerPage"><span class="Label">Jammers</span></a></li>
-          <li><a href="#Team1BlockerTimerPage"><span class="Team1 Name Color Label">Team 1</span> <span class="Team1 Color Label">Blockers</span></a></li>
-          <li><a href="#Team2BlockerTimerPage"><span class="Team2 Name Color Label">Team 2</span> <span class="Team2 Color Label">Blockers</span></a></li>
-          <li><a href="#BothTeamsTimerPage"><span class="Label">Both Teams</span></a></li>
+          <li><a href="#PenaltyBoxJammers"><span class="Label">Jammers</span></a></li>
+          <li><a href="#PenaltyBoxTeam1Blockers"><span class="Team1 Name Color Label">Team 1</span> <span class="Team1 Color Label">Blockers</span></a></li>
+          <li><a href="#PenaltyBoxTeam2Blockers"><span class="Team2 Name Color Label">Team 2</span> <span class="Team2 Color Label">Blockers</span></a></li>
+          <li><a href="#PenaltyBoxBothTeams"><span class="Label">Both Teams</span></a></li>
         </ul>
       </div>
     </div>
 
-    <div data-role="page" id="JammerTimerPage" class="BoxTimerPage">
+    <div data-role="page" id="PenaltyBoxJammers" class="BoxTimerPage">
     </div>
-    <div data-role="page" id="Team1BlockerTimerPage" class="BoxTimerPage">
+    <div data-role="page" id="PenaltyBoxTeam1Blockers" class="BoxTimerPage">
     </div>
-    <div data-role="page" id="Team2BlockerTimerPage" class="BoxTimerPage">
+    <div data-role="page" id="PenaltyBoxTeam2Blockers" class="BoxTimerPage">
     </div>
-    <div data-role="page" id="BothTeamsTimerPage" class="BoxTimerPage">
+    <div data-role="page" id="PenaltyBoxBothTeams" class="BoxTimerPage">
     </div>
 
     <script>
