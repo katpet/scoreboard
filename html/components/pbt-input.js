@@ -263,10 +263,25 @@ function setupCallbacks() {
       'ScoreBoard.CurrentGame.Team(*).UniformColor'
     ],
     function (k, v) {
-      //console.log('color');
-      //  var name = WS.state['ScoreBoard.CurrentGame.Team(' + k.Team + ').UniformColor'];
       $('.Name.Team' + k.Team).text(v);
+    }
+  );
+
+  WS.Register(
+    [
+      'ScoreBoard.CurrentGame.Team(*).Color(operator_fg)'
+    ],
+    function (k, v) {
       $('.Color.Team' + k.Team).css("color", v);
+    }
+  );
+
+  WS.Register(
+    [
+      'ScoreBoard.CurrentGame.Team(*).Color(operator_bg)'
+    ],
+    function (k, v) {
+      $('.Color.Team' + k.Team).css("background-color", v);
     }
   );
 
