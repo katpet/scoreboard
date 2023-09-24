@@ -816,6 +816,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         set(IN_JAM, snapshot.inJam());
         setInPeriod(snapshot.inPeriod());
         for (Clock clock : getAll(CLOCK)) { clock.restoreSnapshot(snapshot.getClockSnapshot(clock.getId())); }
+        for (Clock boxClock : getAll(BOX_CLOCK)) { boxClock.restoreSnapshot(snapshot.getClockSnapshot(boxClock.getId())); }
         for (Team team : getAll(TEAM)) { team.restoreSnapshot(snapshot.getTeamSnapshot(team.getId())); }
         for (Button button : Button.values()) { setLabel(button, snapshot.getLabels().get(button)); }
         setLabel(Button.UNDO, ACTION_NONE);
@@ -1035,6 +1036,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
             for (Button button : Button.values()) { labels.put(button, g.getLabel(button)); }
             clockSnapshots = new HashMap<>();
             for (Clock clock : g.getAll(CLOCK)) { clockSnapshots.put(clock.getId(), clock.snapshot()); }
+            for (Clock boxClock : g.getAll(BOX_CLOCK)) { clockSnapshots.put(boxClock.getId(), boxClock.snapshot()); }
             teamSnapshots = new HashMap<>();
             for (Team team : g.getAll(TEAM)) { teamSnapshots.put(team.getId(), team.snapshot()); }
         }
