@@ -260,10 +260,19 @@ function createBoxTimer(pageId, teamId, pos, seatId) {
 function setupCallbacks() {
   WS.Register(
     [
-      'ScoreBoard.CurrentGame.Team(*).UniformColor'
+      'ScoreBoard.CurrentGame.Team(*).AlternateName(operator)',
+      'ScoreBoard.CurrentGame.Team(*).UniformColor',
+      'ScoreBoard.CurrentGame.Team(*).Name',
     ],
     function (k, v) {
-      $('.Name.Team' + k.Team).text(v);
+      var teamName = WS.state['ScoreBoard.CurrentGame.Team(' + k.Team + ').AlternateName(operator)'];
+      if(teamName == null || teamName == '') {
+        teamName = WS.state['ScoreBoard.CurrentGame.Team(' + k.Team + ').UniformColor'];
+        if(teamName ==  null || teamName == '') {
+          teamName = WS.state['ScoreBoard.CurrentGame.Team(' + k.Team + ').Name'];
+        }
+      }
+      $('.Name.Team' + k.Team).text(teamName);
     }
   );
 
