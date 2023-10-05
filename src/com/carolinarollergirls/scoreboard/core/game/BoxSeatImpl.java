@@ -75,7 +75,11 @@ public class BoxSeatImpl extends ScoreBoardEventProviderImpl<BoxSeat> implements
 
     @Override
     public void startBox() {
+        Clock jc = team.getGame().getClock(Clock.ID_JAM);
         if(started()) {
+            if(!jc.isRunning()) {
+                return;
+            }
             // Resume a clock that was paused.
             synchronized (coreLock) {
                 Clock pc = getBoxClock();
@@ -109,6 +113,92 @@ public class BoxSeatImpl extends ScoreBoardEventProviderImpl<BoxSeat> implements
                 }
             }
             restartBox();
+            if(!jc.isRunning()) {
+                stopBox(); // If jam not running, pause right away
+                getBoxClock().resetTime();
+            }
+        }
+    }
+
+    private void doJammerLogic(Clock pc) {
+        if(getFloorPosition() != FloorPosition.JAMMER) {
+            return;
+        }        
+        Team otherTeam = (team.getProviderId() == Team.ID_1) ? team.getGame().getTeam(Team.ID_2) : team.getGame().getTeam(Team.ID_1);
+        for(BoxSeat bs : otherTeam.getAll(Team.BOX_SEAT)) {
+            if(bs.getFloorPosition() == FloorPosition.JAMMER) {
+                Clock otherClock = bs.getBoxClock();
+                if(otherClock != null && (otherClock.isRunning() || bs.started())) {
+                    long penaltyDuration = team.getGame().getLong(Rule.PENALTIES_DURATION);
+                    long otherMaximum = otherClock.getMaximumTime();
+                    long thisMaximum = pc.getMaximumTime();
+                    long otherTime = otherClock.getTime();
+                    long thisTime = pc.getTime();
+                    long otherElapsed2 = otherMaximum - otherTime;
+                    long epsilon = 800;
+                    if(otherElapsed2 < epsilon) {
+                        // This value can end up being not quite zero or even a bit negative, which is undesirable
+                        // because then it'll be ignored when we try to set the clock value, so round to 0 when approximately 0.
+                        // But, use a small number of milliseconds here to represent zero, because
+                        // that will trigger the UI to notice that the clock has changed; it'll still show as 0 seconds.
+                        //otherElapsed2 = 1;
+                    }
+                    long otherNewTime = otherTime;
+                    long thisNewTime = thisMaximum;
+
+                    if(otherNewTime >= penaltyDuration || thisNewTime >= penaltyDuration) {
+                        // A jammer has multiple penalties.
+                        // Cancel extra penalties as far as we can, taking into account how much the other jammer has already served.
+                        // Since these times aren't exact, check within some small amount of penalty length.
+                        while(otherNewTime >= (penaltyDuration - epsilon) && thisNewTime >= (penaltyDuration - epsilon)) {
+                            otherNewTime -= penaltyDuration;
+                            thisNewTime -= penaltyDuration;
+                            otherMaximum -= penaltyDuration;
+                            thisMaximum -= penaltyDuration;
+                        }
+                    }
+
+                    if(otherMaximum == 0 || thisMaximum == 0) {
+                        // If a max reduced to zero above, the values for thisNewTime and otherNewTime are already good
+                    } else if(otherMaximum == thisMaximum) {
+                        // Simple, common case.
+                        // Sitting jammer is released,
+                        // and arriving jammer serves as much as sitting jammer did.
+                        thisNewTime = otherElapsed2;
+                        otherNewTime = 1;
+                    } else if(otherMaximum > penaltyDuration && thisMaximum == penaltyDuration) {
+                        // This and next case are similar to the simple one above except the max times differ,
+                        // so need to account for that in the elapsed time.
+                        thisNewTime = otherElapsed2 - (otherMaximum - thisMaximum);
+                        otherNewTime = 1;
+                    } else if(otherMaximum == penaltyDuration && thisMaximum > penaltyDuration) {
+                        thisNewTime = otherElapsed2 + (thisMaximum - otherMaximum);
+                        otherNewTime = 1;
+                    } else {
+                        // The nightmare scenario!
+                        // A jammer has returned to the box while
+                        // sitting jammer is already serving a reduced single penalty,
+                        // so can't reduce that any more.
+                        // Sitting jammer must finish their penalty,
+                        // and arriving jammer gets regular penalty.
+                        otherNewTime = otherTime;
+                        thisNewTime = penaltyDuration;
+                    }
+
+                    // jigger refresh of clock
+                    if(thisNewTime == 0) {
+                        thisNewTime = epsilon;
+                    }
+                    if(thisNewTime == thisTime) {
+                        thisNewTime += 1;
+                    }
+                    pc.setMaximumTime(thisNewTime);
+                    pc.setTime(thisNewTime);
+                    otherClock.setTime(otherNewTime);
+                    pc.restart();                    
+                }
+                break;
+            }
         }
     }
 
@@ -119,68 +209,11 @@ public class BoxSeatImpl extends ScoreBoardEventProviderImpl<BoxSeat> implements
             if(pc == null) {
                 return;
             }
-            pc.setMaximumTime(team.getGame().getLong(Rule.PENALTIES_DURATION));
             pc.setCountDirectionDown(true);
             pc.restart();
             setWallStartTime(ScoreBoardClock.getInstance().getCurrentWalltime());
             if(hasFloorPosition()) {
-                if(getFloorPosition() == FloorPosition.JAMMER) {
-                    // Jammer logic
-                    Team otherTeam = (team.getProviderId() == Team.ID_1) ? team.getGame().getTeam(Team.ID_2) : team.getGame().getTeam(Team.ID_1);
-                    for(BoxSeat bs : otherTeam.getAll(Team.BOX_SEAT)) {        
-                        if(bs.getFloorPosition() == FloorPosition.JAMMER) {
-                            Clock otherClock = bs.getBoxClock();
-                            if(otherClock != null && otherClock.isRunning()) {
-                                long penaltyDuration = team.getGame().getLong(Rule.PENALTIES_DURATION);
-                                long otherMaximum = otherClock.getMaximumTime();
-                                long otherTime = otherClock.getTime();
-                                long otherElapsed2 = otherMaximum - otherTime;
-                                long otherNewTime = 0;
-                                long thisNewTime = 0;
-                                if(otherMaximum == penaltyDuration) {
-                                    // Simple, common case.
-                                    // Sitting jammer is released,
-                                    // and arriving jammer serves as much as sitting jammer did.
-                                    thisNewTime = otherElapsed2;
-                                    otherNewTime = 0;
-                                } else if(otherMaximum > penaltyDuration) {
-                                    if(otherTime > penaltyDuration) {
-                                        // In this case sitting jammer has multiple penalties.
-                                        // Turn new jammer away,
-                                        // and reduce sitting jammer by one penalty.
-                                        // If sitting jammer happens to have even more
-                                        // than two penalties, other jammer can come and go
-                                        // reducing sitting jammer by one penalty each time
-                                        // until we arrive at the simple case.
-                                        thisNewTime = 1000; // to cause zero to appear
-                                        otherNewTime = otherTime - penaltyDuration;
-                                    } else {
-                                        // Reverts to simple case
-                                        // Sitting jammer leaves,
-                                        // New jammer sits for the amount that 
-                                        // other jammer served of their second penalty.
-                                        thisNewTime = otherElapsed2 - penaltyDuration;
-                                        otherNewTime = 0;
-                                    }
-                                } else {
-                                    // The nightmare scenario!
-                                    // A jammer has returned to the box while
-                                    // sitting jammer is already serving a reduced single penalty,
-                                    // so can't reduce that any more.
-                                    // Sitting jammer must finish their penalty,
-                                    // and arriving jammer gets regular penalty.
-                                    otherNewTime = otherTime;
-                                    thisNewTime = penaltyDuration;
-                                }
-                                pc.setMaximumTime(thisNewTime);
-                                pc.setTime(thisNewTime);
-                                pc.restart();
-                                otherClock.setTime(otherNewTime);
-                            }
-                            break;
-                        }
-                    }
-                }
+                doJammerLogic(pc);
                 Fielding f = team.getPosition(getFloorPosition()).getCurrentFielding();
                 if( f != null ) {
                     BoxTrip bt = f.getCurrentBoxTrip();
@@ -201,7 +234,7 @@ public class BoxSeatImpl extends ScoreBoardEventProviderImpl<BoxSeat> implements
             long penaltyDuration = team.getGame().getLong(Rule.PENALTIES_DURATION);
             pc.setMaximumTime(penaltyDuration);
         }
-        wallStartTime = 0;
+        setWallStartTime(0);
         resetSkater();
     }
 
@@ -256,10 +289,11 @@ public class BoxSeatImpl extends ScoreBoardEventProviderImpl<BoxSeat> implements
                                 s.setPenaltyCount(2, penaltyCountP2 + getCurNumPenalties());
                             }
                         }
-                        //curTrip.end();
                         fpValid = false;
                         numPenalties = 1;
-                        f.execute(Fielding.END_BOX_TRIP, Source.OTHER);
+                        if(f.getCurrentBoxTrip() != null) {
+                            f.getCurrentBoxTrip().end();
+                        }
                    }
                 }
             }
@@ -291,7 +325,9 @@ public class BoxSeatImpl extends ScoreBoardEventProviderImpl<BoxSeat> implements
             if(cur_s != null) {
                 Fielding cur_f = cur_s.getCurrentFielding();
                 if(cur_f != null) {
-                    cur_f.getCurrentBoxTrip().delete();
+                    if(cur_f.getCurrentBoxTrip() != null) {
+                        cur_f.getCurrentBoxTrip().delete();
+                    }
                 }
             }
         }
@@ -368,6 +404,7 @@ public class BoxSeatImpl extends ScoreBoardEventProviderImpl<BoxSeat> implements
 
     private void setWallStartTime(long w) {
         wallStartTime = w;
+        set(STARTED, wallStartTime != 0);
     }
 
     private long getWallStartTime() {

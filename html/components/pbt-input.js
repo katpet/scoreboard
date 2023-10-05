@@ -20,6 +20,15 @@ const TimerControl = {
   Reset: "Reset" 
 }
 
+const Colors = {
+  Paused: "white",
+  Alert: "crimson",
+  Stop: "crimson",
+  Inactive: "dimgrey",
+  Active: "white",
+  Start: "limegreen"
+}
+
 function isTrue(value) {
   'use strict';
   if (typeof value === 'boolean') {
@@ -295,39 +304,98 @@ function setupCallbacks() {
   );
 
   WS.Register(
-    'ScoreBoard.CurrentGame.BoxClock(*).Time',
+    [
+      'ScoreBoard.CurrentGame.BoxClock(*).Time',
+      'ScoreBoard.CurrentGame.Team(*).BoxSeat(*).Started',
+      'ScoreBoard.CurrentGame.Clock(Jam).Running',
+    ],
     function (k, v) {
-    var running = isTrue(WS.state['ScoreBoard.CurrentGame.BoxClock(' + k.BoxClock + ').Running']);
-    if(running) {
+      var running = isTrue(WS.state['ScoreBoard.CurrentGame.BoxClock(' + k.BoxClock + ').Running']);
+      if(running) {
         if(v <= 10000) {
-          $('.Time.'+k.BoxClock).css('color', 'crimson');
+          $('.Time.'+k.BoxClock).css('color', Colors.Alert);
         } else {
-          $('.Time.'+k.BoxClock).css('color', 'white');
+          $('.Time.'+k.BoxClock).css('color', Colors.Active);
         }
-      } else {
-        $('.Time.'+k.BoxClock).css('color', 'gray');
+      } else if(k.BoxClock) {
+        var jamrunning = isTrue(WS.state['ScoreBoard.CurrentGame.Clock(Jam).Running']);
+        var team = k.BoxClock.startsWith('Team2') ? 2 : 1;
+        var pos = '';
+        for(const p of ["Jammer", "Blocker1", "Blocker2", "Blocker3"]) {
+          if(k.BoxClock.endsWith(p)) {
+            pos = p;
+          }
+        }
+
+        var started = isTrue(WS.state['ScoreBoard.CurrentGame.Team('+team+').BoxSeat('+ pos+').Started']);
+        if(!jamrunning && started) {
+          // indicate a clock that is paused between jams so it's clearer it'll start back up on next jam
+          $('.Time.'+k.BoxClock).css('color', Colors.Paused);
+        }
+      } else if(k.BoxSeat) {
+        if(v) {
+          $('.Time.Team' + k.Team + k.BoxSeat).css('color', Colors.Paused);
+          var jamrunning = isTrue(WS.state['ScoreBoard.CurrentGame.Clock(Jam).Running']);
+          if(!jamrunning) {
+            $('.BoxTimerPage button.Team'+k.Team + k.BoxSeat+'.Start').prop("disabled", true);
+          }
+        } else {
+          $('.Time.Team' + k.Team + k.BoxSeat).css('color', Colors.Inactive);
+          $('.BoxTimerPage button.Team'+k.Team + k.BoxSeat+'.Start').prop("disabled", false);
+        }
       }
     }
   );
 
   WS.Register(
-    'ScoreBoard.CurrentGame.BoxClock(*).Running',
+    [
+      'ScoreBoard.CurrentGame.BoxClock(*).Running',
+      'ScoreBoard.CurrentGame.Clock(Jam).Running',
+      'ScoreBoard.CurrentGame.Team(*).BoxSeat(*).Started',
+    ],
     function (k, v) {
-      if(isTrue(v)) {
+      var running = isTrue(WS.state['ScoreBoard.CurrentGame.BoxClock(' + k.BoxClock + ').Running']);
+      if(k.BoxClock == null) {
+        return;
+      }
+      if(running) {
         $('.BoxTimerPage button.'+k.BoxClock+'.Stop').show();
         $('.BoxTimerPage button.'+k.BoxClock+'.Start').hide();
         $('.BoxTimerPage button.'+k.BoxClock+'.Reset').prop("disabled", true);
-        $('.Time.'+k.BoxClock).css('color', 'white');
+        $('.Time.'+k.BoxClock).css('color', Colors.Active);
       } else {
         $('.BoxTimerPage button.'+k.BoxClock+'.Stop').hide();
         $('.BoxTimerPage button.'+k.BoxClock+'.Start').show();
+        $('.BoxTimerPage button.'+k.BoxClock+'.Start').prop("disabled", false);        
         $('.BoxTimerPage button.'+k.BoxClock+'.Reset').prop("disabled", false);
-        $('.Time.'+k.BoxClock).css('color', 'dimgray');
-      }
+
+        var jamrunning = isTrue(WS.state['ScoreBoard.CurrentGame.Clock(Jam).Running']);
+        var team = k.BoxClock.startsWith('Team2') ? 2 : 1;
+        var pos = '';
+
+        for(const p of ["Jammer", "Blocker1", "Blocker2", "Blocker3"]) {
+          if(k.BoxClock.endsWith(p)) {
+            pos = p;
+          }
+        }
+        var started = isTrue(WS.state['ScoreBoard.CurrentGame.Team('+team+').BoxSeat('+pos+').Started']);
+        if(started) {
+          $('.Time.'+k.BoxClock).css('color', Colors.Paused);
+          if(!jamrunning) {
+            $('.BoxTimerPage button.'+k.BoxClock+'.Start').prop("disabled", true);
+          }
+        } else {
+          $('.Time.'+k.BoxClock).css('color', Colors.Inactive);
+          $('.BoxTimerPage button.'+k.BoxClock+'.Start').prop("disabled", false);          
+        }
+     }
     }
   );
 
-  WS.Register('ScoreBoard.CurrentGame.Team(*).Skater(*).Role',
+  WS.Register(
+    [
+      'ScoreBoard.CurrentGame.Team(*).Skater(*).Role',
+    ],
     function (k, v) {
       if(v == Position.Jammer) {
         var selectId = $('#PenaltyBoxJammersTeam'+k.Team+'DisplayJammer,#PenaltyBoxBothTeamsTeam'+k.Team+'DisplayJammer');
@@ -341,7 +409,7 @@ function setupCallbacks() {
   WS.Register(
     [
       'ScoreBoard.CurrentGame.Team(*).BoxSeat(*).BoxSkaterPenalties',
-    ],  
+    ],
   function (k, v) {
     var sel = $('.Team'+k.Team+'.'+k.BoxSeat+'.PenaltyCount');
     if(sel.length) {
@@ -360,7 +428,7 @@ WS.Register([
   function(k, v) {
     // Edit the popup that allows adding/removing time to match penalty duration rule
     var sel = $('.editTime');
-    if(sel.length) {
+    if(sel.length && v) {
 
       // Convert from format like 0:30 or 1:00 to seconds,
       // which appears in menu like '+30', '-30' or '+60', '-60'
@@ -437,12 +505,12 @@ WS.Register(
 }
 
 function setupButtonsStyle() {
-  $('.BoxTimerPage button.Start').css('background-color', 'limegreen');
-  $('.BoxTimerPage button.Start').css('color', 'white');
-  $('.BoxTimerPage button.Stop').css('background-color', 'crimson');
-  $('.BoxTimerPage button.Stop').css('color', 'white');
-  $('.BoxTimerPage button.Reset').css('background-color', 'dimgray');
-  $('.BoxTimerPage button.Reset').css('color', 'white');  
+  $('.BoxTimerPage button.Start').css('background-color', Colors.Start);
+  $('.BoxTimerPage button.Start').css('color', Colors.Active);
+  $('.BoxTimerPage button.Stop').css('background-color', Colors.Stop);
+  $('.BoxTimerPage button.Stop').css('color', Colors.Active);
+  $('.BoxTimerPage button.Reset').css('background-color', Colors.Inactive);
+  $('.BoxTimerPage button.Reset').css('color', Colors.Active);  
 }
 
 function setupEditButton(pageId, teamId, pos, seatId) {

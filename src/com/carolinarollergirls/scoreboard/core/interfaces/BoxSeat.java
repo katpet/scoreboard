@@ -27,6 +27,7 @@ public interface BoxSeat extends ScoreBoardEventProvider {
     public static final Value<String> BOX_SKATER = new Value<>(String.class, "BoxSkater", "", props);
     public static final Value<Integer> BOX_TIME_CHANGE = new Value<>(Integer.class, "BoxTimeChange", 0, props);
     public static final Value<Integer> BOX_SKATER_PENALTIES = new Value<>(Integer.class, "BoxSkaterPenalties", 0, props);
+    public static final Value<Boolean> STARTED = new Value<>(Boolean.class, "Started", false, props);
 
     public static final Command START_BOX = new Command("StartBox", props);
     public static final Command STOP_BOX = new Command("StopBox", props);
