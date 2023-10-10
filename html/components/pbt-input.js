@@ -465,7 +465,7 @@ WS.Register(
         var pageId = pageIds[idx];
         for(var i=1; i <= 3; i++ ) {
           var selectId = '#'+pageId+'Team'+k.Team+'SelectBlocker'+i;
-          var optionExists = ($(selectId+' option[value=' + number+']').length > 0);
+          var optionExists = ($(selectId+' option[value="' + number+'"]').length > 0);
           if(optionExists == false) {
             $(selectId).append($('<option>', {value: number, text: ''+number}));
             var options = $(selectId + ' option');
