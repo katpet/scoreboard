@@ -358,10 +358,10 @@ public class StatsbookExporter extends Thread {
             }
             List<Period> periods = new ArrayList<>(game.getAll(Game.PERIOD));
             int period = bt.getPeriodNumber();
-            if(!(period == 1 || period == 2))
+            if(!(period == 1 || period == 2) || bt.getStartFielding() == null)
                 continue;
             String skaterNumber = "";
-            String role = bt.get(BoxTrip.START_FIELDING).getCurrentRole().toString().substring(0, 1);
+            String role = bt.getStartFielding().getCurrentRole().toString().substring(0, 1);
             int startJamNumber = bt.get(BoxTrip.START_JAM_NUMBER);
             int endJamNumber = bt.get(BoxTrip.END_JAM_NUMBER);
             long duration = bt.get(BoxTrip.DURATION);
