@@ -479,7 +479,10 @@ WS.Register(
 
             $(selectId).append( options );
 
-            var skater = WS.state['ScoreBoard.CurrentGame.Team(' + k.Team + ').BoxSkaterB'+i];
+            var selectedSkater = WS.state['ScoreBoard.CurrentGame.Team(' + k.Team + ').BoxSeat(Blocker'+ i +').BoxSkater'];          
+            if(selectedSkater != null && selectedSkater !== "") {
+              $(selectId).val(selectedSkater).trigger('change');
+            }
           }
         }
       }
@@ -545,7 +548,9 @@ function setupSkaterNumber(pageId, teamId, pos, seatId) {
   sel.append($('<option value="" selected hidden>'+defaultSel+'</option>'));
   sel.change(function() { 
     var value = $(this).val();
-    WS.Set('ScoreBoard.CurrentGame.Team('+teamId+').BoxSeat('+seatTag+').BoxSkater', value);
+    if(value != null && value !== "") {
+      WS.Set('ScoreBoard.CurrentGame.Team('+teamId+').BoxSeat('+seatTag+').BoxSkater', value);
+    }
   });
 
 }
