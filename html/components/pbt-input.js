@@ -457,17 +457,21 @@ WS.Register([
 WS.Register(
   [
     'ScoreBoard.CurrentGame.Team(*).Skater(*).RosterNumber',
+    'ScoreBoard.CurrentGame.Team(*).Skater(*).Role',
   ],
     function (k, v) {
       var number = WS.state['ScoreBoard.CurrentGame.Team(' + k.Team + ').Skater(' + k.Skater + ').RosterNumber'];
+      var role = WS.state['ScoreBoard.CurrentGame.Team(' + k.Team + ').Skater(' + k.Skater + ').Role'];
+      var roleTag = (role !== "Bench" && role !== "") ? ('  - '+role.charAt(0)) : "";
       var pageIds = ['PenaltyBoxTeam'+k.Team+'Blockers', 'PenaltyBoxBothTeams'];
       for(const idx in pageIds) {
         var pageId = pageIds[idx];
         for(var i=1; i <= 3; i++ ) {
           var selectId = '#'+pageId+'Team'+k.Team+'SelectBlocker'+i;
-          var optionExists = ($(selectId+' option[value="' + number+'"]').length > 0);
-          if(optionExists == false) {
-            $(selectId).append($('<option>', {value: number, text: ''+number}));
+          var entry = selectId+' option[value="' + number+'"]';
+          if($(entry).length == 0)
+          {
+            $(selectId).append($('<option>', {value: number, text: number + roleTag}));
             var options = $(selectId + ' option');
             $(selectId).empty();
         
@@ -483,6 +487,10 @@ WS.Register(
             if(selectedSkater != null && selectedSkater !== "") {
               $(selectId).val(selectedSkater).trigger('change');
             }
+          }
+          else
+          {
+            $(entry).text( number + roleTag );
           }
         }
       }
