@@ -204,6 +204,22 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
                     }
                 }));
 
+        // handle auto-end box trips when penalty box clocks finish
+        for (Team t : getAll(TEAM)) {
+            for (BoxSeat bs : t.getAll(Team.BOX_SEAT)) {
+                addScoreBoardListener(new ConditionalScoreBoardListener<>(Clock.class, bs.getBoxClock().getId(),
+                        Clock.RUNNING, Boolean.FALSE, new ScoreBoardListener() {
+                            @Override
+                            public void scoreBoardChange(ScoreBoardEvent<?> event) {
+                                Clock pc = bs.getBoxClock();
+                                if (pc.isTimeAtEnd()) {
+                                    bs.endBox();
+                                }
+                            }
+                        }));
+            }
+        }
+
         // handle changes to the ruleset (if following a preset ruleset)
         scoreBoard.getRulesets().addScoreBoardListener(
             new ConditionalScoreBoardListener<>(Ruleset.class, Ruleset.RULE, new ScoreBoardListener() {
