@@ -230,9 +230,9 @@ public class ClockImpl extends ScoreBoardEventProviderImpl<Clock> implements Clo
     public boolean isTimeAtStart(long t) {
         synchronized (coreLock) {
             if (isCountDirectionDown()) {
-                return t == getMaximumTime();
+                return t >= getMaximumTime();
             } else {
-                return t == 0;
+                return t <= 0;
             }
         }
     }
@@ -244,9 +244,9 @@ public class ClockImpl extends ScoreBoardEventProviderImpl<Clock> implements Clo
     public boolean isTimeAtEnd(long t) {
         synchronized (coreLock) {
             if (isCountDirectionDown()) {
-                return t == 0;
+                return t <= 0;
             } else {
-                return t == getMaximumTime();
+                return t >= getMaximumTime();
             }
         }
     }
