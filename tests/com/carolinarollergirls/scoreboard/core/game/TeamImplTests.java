@@ -12,7 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.carolinarollergirls.scoreboard.core.ScoreBoardImpl;
-import com.carolinarollergirls.scoreboard.core.interfaces.Clock;
 import com.carolinarollergirls.scoreboard.core.interfaces.CurrentGame;
 import com.carolinarollergirls.scoreboard.core.interfaces.Fielding;
 import com.carolinarollergirls.scoreboard.core.interfaces.FloorPosition;
@@ -123,7 +122,6 @@ public class TeamImplTests {
 
     @Test
     public void testSetRetainedOfficialReview() {
-        sb.getSettings().set(ScoreBoard.SETTING_CLOCK_AFTER_TIMEOUT, Clock.ID_LINEUP);
         assertFalse(team.retainedOfficialReview());
         assertEquals(1, team.getOfficialReviews());
         sb.addScoreBoardListener(new ConditionalScoreBoardListener<>(team, Team.RETAINED_OFFICIAL_REVIEW, listener));
@@ -162,7 +160,6 @@ public class TeamImplTests {
 
     @Test
     public void testTimeoutsResetAtHalf() {
-        sb.getSettings().set(ScoreBoard.SETTING_CLOCK_AFTER_TIMEOUT, Clock.ID_LINEUP);
         team.timeout();
         advance(60000);
         g.timeout();

@@ -758,9 +758,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
     private void _startJam() {
         Clock pc = getClock(Clock.ID_PERIOD);
         Clock jc = getClock(Clock.ID_JAM);
-        Clock tc = getClock(Clock.ID_TIMEOUT);
 
-        if (!getCurrentTimeout().isRunning()) { tc.stop(); }
         _endIntermission(false);
         _endLineup();
         if (!getBoolean(Rule.TO_JAM) || !getCurrentTimeout().isRunning()) { pc.start(); }
@@ -837,7 +835,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         if (!getCurrentTimeout().isRunning()) { return; }
 
         getCurrentTimeout().stop();
-        if (!getSetting(ScoreBoard.SETTING_CLOCK_AFTER_TIMEOUT).equals(Clock.ID_TIMEOUT)) { tc.stop(); }
+        tc.stop();
         if (!timeoutFollows) {
             set(CURRENT_TIMEOUT, noTimeoutDummy);
             if (pc.isTimeAtEnd()) {
