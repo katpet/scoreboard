@@ -181,6 +181,20 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
                                                     }
                                                 }));
 
+        // handle intermission restart
+        addScoreBoardListener(new ConditionalScoreBoardListener<>(
+            Clock.class, getClock(Clock.ID_INTERMISSION).getId(), Clock.RUNNING, Boolean.TRUE,
+            new ScoreBoardListener() {
+                @Override
+                public void scoreBoardChange(ScoreBoardEvent<?> event) {
+                    if (getClock(Clock.ID_PERIOD).isTimeAtStart() && getCurrentPeriod().numberOf(Period.JAM) == 0 &&
+                        getCurrentPeriodNumber() > 0) {
+                        // intermission clock has bee restarted before period start - undo period advancement
+                        set(CURRENT_PERIOD, getCurrentPeriod().getPrevious());
+                    }
+                }
+            }));
+
         // handle auto-start (if enabled)
         addScoreBoardListener(new ConditionalScoreBoardListener<>(
             Clock.class, getClock(Clock.ID_LINEUP).getId(), Clock.TIME, new ScoreBoardListener() {

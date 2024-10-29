@@ -1502,6 +1502,28 @@ public class GameImplTests {
     }
 
     @Test
+    public void testIntermissionClockEnd_timeToDerby() {
+        ic.setMaximumTime(20000);
+        ic.restart();
+        assertTrue(ic.isRunning());
+        assertEquals(0, pc.getNumber());
+
+        advance(21000);
+        assertFalse(ic.isRunning());
+        assertEquals(1, pc.getNumber());
+
+        // restarting intermission clock before first Jam should go back to Time To Derby
+        ic.setMaximumTime(20000);
+        ic.restart();
+        assertTrue(ic.isRunning());
+        assertEquals(0, pc.getNumber());
+
+        advance(21000);
+        assertFalse(ic.isRunning());
+        assertEquals(1, pc.getNumber());
+    }
+
+    @Test
     public void testTimeoutInLast30s() {
         // jam ended before 30s mark, official timeout after 30s mark
         assertTrue(pc.isCountDirectionDown());
