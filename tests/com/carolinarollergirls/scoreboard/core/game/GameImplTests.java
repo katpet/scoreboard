@@ -98,7 +98,6 @@ public class GameImplTests {
         sb.addScoreBoardListener(batchCounter);
         // Clock Sync can cause clocks to be changed when started, breaking tests.
         sb.getSettings().set(Clock.SETTING_SYNC, "False");
-        sb.getSettings().set(ScoreBoard.SETTING_CLOCK_AFTER_TIMEOUT, "Lineup");
         checkPeriodJamInvariants();
     }
 
@@ -783,37 +782,6 @@ public class GameImplTests {
         assertTrue(ic.isRunning());
         assertTrue(ic.isTimeAtStart());
         checkLabels(Game.ACTION_START_JAM, Game.ACTION_LINEUP, Game.ACTION_TIMEOUT,
-                    Game.UNDO_PREFIX + Game.ACTION_STOP_TO);
-    }
-
-    @Test
-    public void testStopJam_endTimeoutKeepTimeoutClock() {
-        sb.getSettings().set(ScoreBoard.SETTING_CLOCK_AFTER_TIMEOUT, "Timeout");
-
-        g.startJam();
-        g.timeout();
-        assertFalse(pc.isRunning());
-        assertFalse(pc.isTimeAtEnd());
-        assertFalse(jc.isRunning());
-        assertFalse(lc.isRunning());
-        tc.setTime(32000);
-        tc.setNumber(8);
-        assertFalse(ic.isRunning());
-        assertEquals(Timeout.Owners.NONE, g.getTimeoutOwner());
-        assertFalse(g.isOfficialReview());
-
-        g.stopJamTO();
-
-        assertFalse(pc.isRunning());
-        assertFalse(jc.isRunning());
-        assertTrue(lc.isRunning());
-        assertTrue(tc.isRunning());
-        assertEquals(32000, tc.getTimeElapsed());
-        assertEquals(8, tc.getNumber());
-        assertFalse(ic.isRunning());
-        assertEquals(Timeout.Owners.NONE, g.getTimeoutOwner());
-        assertFalse(g.isOfficialReview());
-        checkLabels(Game.ACTION_START_JAM, Game.ACTION_NONE, Game.ACTION_TIMEOUT,
                     Game.UNDO_PREFIX + Game.ACTION_STOP_TO);
     }
 
@@ -1565,29 +1533,6 @@ public class GameImplTests {
         assertFalse(g.get(Game.NO_MORE_JAM));
         assertFalse(pc.isRunning());
         assertEquals(22000, pc.getTimeRemaining());
-    }
-
-    @Test
-    public void testPeriodEndWithTimeoutClock() {
-        sb.getSettings().set(ScoreBoard.SETTING_CLOCK_AFTER_TIMEOUT, Clock.ID_TIMEOUT);
-
-        assertTrue(pc.isCountDirectionDown());
-        g.startJam();
-        pc.setTime(25000);
-        g.stopJamTO();
-        assertTrue(g.get(Game.NO_MORE_JAM));
-        g.timeout();
-        advance(35000);
-        assertTrue(g.get(Game.NO_MORE_JAM));
-        g.setTimeoutType(Timeout.Owners.OTO, false);
-        assertTrue(g.get(Game.NO_MORE_JAM));
-        g.stopJamTO();
-        assertTrue(g.get(Game.NO_MORE_JAM));
-        assertTrue(pc.isRunning());
-        advance(26000);
-        assertTrue(ic.isRunning());
-        assertFalse(tc.isRunning());
-        assertFalse(pc.isRunning());
     }
 
     @Test

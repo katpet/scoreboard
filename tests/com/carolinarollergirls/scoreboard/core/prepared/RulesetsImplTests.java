@@ -27,7 +27,6 @@ public class RulesetsImplTests {
     public void setUp() throws Exception {
         sb = new ScoreBoardImpl(false);
         sb.postAutosaveUpdate();
-        sb.getSettings().set(ScoreBoard.SETTING_CLOCK_AFTER_TIMEOUT, "Lineup");
         rulesets = sb.getRulesets();
         root = rulesets.getRuleset(RulesetsImpl.ROOT_ID);
     }

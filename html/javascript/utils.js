@@ -25,10 +25,10 @@ function sbClockSelect(k) {
   var clock = 'NoClock';
   if (jam) {
     clock = 'Jam';
-  } else if (timeout) {
-    clock = 'Timeout';
   } else if (lineup) {
     clock = 'Lineup';
+  } else if (timeout) {
+    clock = 'Timeout';
   } else if (intermission) {
     clock = 'Intermission';
   }

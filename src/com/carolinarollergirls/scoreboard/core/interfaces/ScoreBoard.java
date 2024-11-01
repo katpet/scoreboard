@@ -53,7 +53,6 @@ public interface ScoreBoard extends ScoreBoardEventProvider {
         new Child<>(PreparedOfficial.class, "PreparedOfficial", props);
     public static final Child<CurrentGame> CURRENT_GAME = new Child<>(CurrentGame.class, "CurrentGame", props);
 
-    public static final String SETTING_CLOCK_AFTER_TIMEOUT = "ScoreBoard.ClockAfterTimeout";
     public static final String SETTING_AUTO_START = "ScoreBoard.AutoStart";
     public static final String SETTING_AUTO_START_BUFFER = "ScoreBoard.AutoStartBuffer";
     public static final String SETTING_AUTO_END_JAM = "ScoreBoard.AutoEndJam";
