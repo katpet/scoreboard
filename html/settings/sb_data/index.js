@@ -35,6 +35,11 @@ function _datUpdateSelectedUrl() {
         .map(function (i, elem) {
           return 'ScoreBoard.Settings.Setting(' + $(elem).attr('Setting').slice(0, -1);
         })
+        .get(),
+      $('#officials tr.Content.Selected')
+        .map(function (i, elem) {
+          return 'ScoreBoard.PreparedOfficial(' + $(elem).attr('PreparedOfficial').slice(0, -1);
+        })
         .get()
     )
     .join();
@@ -98,6 +103,9 @@ function _datCreateRemoveDialog(type) {
           $.each($(this).data(), function (k, v) {
             WS.Set('ScoreBoard.Settings.Setting(' + v + ')', null);
           });
+        });
+        $('#officials' + selector).each(function () {
+          WS.Set('ScoreBoard.PreparedOfficial(' + $(this).attr('PreparedOfficial') + ')', null);
         });
         $('.ToDelete').removeClass('ToDelete');
         div.dialog('close');

@@ -198,9 +198,9 @@
   <div id="AnnotationEditor" sbContext="^Jam(*).TeamJam(*).Fielding(*)">
     <div class="sbSegment">
       <div class="sbGroup" sbPrefix="f:[*]">
-        <span sbClass="sbHide: CurrentBoxTrip: sbIsEmpty">Substitute: </span>
+        <span sbClass="sbHide: PenaltyBox: !">Substitute: </span>
         <span
-          sbClass="sbHide: f.CurrentBoxTrip: sbIsEmpty"
+          sbClass="sbHide: f.PenaltyBox: !"
           sbContext="/ScoreBoard.Game([game]).Team([TeamJam])"
           sbAttr="oldNumber: f.SkaterNumber"
           sbButtonGroup
@@ -216,11 +216,11 @@
         </span>
         <input type="text" size="60" id="annotation" sbControl="Annotation:: sbToNullIfEmpty" />
         <button sbClass="sbHide: PenaltyBox, CurrentBoxTrip: pltNoUnend" sbSet="UnendBoxTrip" sbCall="sbCloseDialog">Unend Box Trip</button>
-        <span sbClass="sbHide: PenaltyBox: !">Quick Annotation: </span>
-        <button sbClass="sbHide: PenaltyBox: !" sbSet="Annotation: sbAppendText | Penalty: false" sbCall="sbCloseDialog">
+        <span sbClass="sbHide: CurrentBoxTrip: sbIsEmpty">Quick Annotation: </span>
+        <button sbClass="sbHide: CurrentBoxTrip: sbIsEmpty" sbSet="Annotation: sbAppendText | PenaltyBox: false" sbCall="sbCloseDialog">
           Self Report
         </button>
-        <button sbClass="sbHide: PenaltyBox: !" sbSet="Annotation: sbAppendText | Penalty: false" sbCall="sbCloseDialog">
+        <button sbClass="sbHide: CurrentBoxTrip: sbIsEmpty" sbSet="Annotation: sbAppendText | PenaltyBox: false" sbCall="sbCloseDialog">
           Penalty Overturned
         </button>
       </div>

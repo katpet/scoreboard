@@ -160,8 +160,12 @@ public class BoxTripImpl extends ScoreBoardEventProviderImpl<BoxTrip> implements
     @Override
     protected void valueChanged(Value<?> prop, Object value, Object last, Source source, Flag flag) {
         if (prop == IS_CURRENT) {
-            if (!(Boolean) value && getEndFielding() == null) { end(); }
             if (!(Boolean) value) {
+                if (getEndFielding() == null) {
+                    end();
+                } else if (!game.isInJam() && getEndFielding().getTeamJam().isRunningOrUpcoming()) {
+                    remove(FIELDING, getEndFielding());
+                }
                 storedClock = getClock();
                 remove(CLOCK, "");
             }

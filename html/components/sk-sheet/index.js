@@ -112,9 +112,10 @@ function sksToTripSpPoints(k) {
   const prefix = k.upTo('ScoringTrip') + '.';
   if (k.ScoringTrip === '2' || k.ScoringTrip === '1') {
     const prefix1 = k.upTo('TeamJam') + '.ScoringTrip(1).';
+    const prefix2 = k.upTo('TeamJam') + '.ScoringTrip(2).';
     const t1Score = WS.state[prefix1 + 'Score'];
     const t1Text = t1Score && isTrue(WS.state[prefix1 + 'AfterSP']) ? t1Score + ' + ' : '';
-    const score = WS.state[prefix + 'Score'];
+    const score = WS.state[prefix2 + 'Score'];
     if (score == null) {
       return t1Text ? t1Text + 'NI' : '';
     } else if (!isTrue(WS.state[prefix + 'AfterSP'])) {
@@ -122,7 +123,7 @@ function sksToTripSpPoints(k) {
     } else if (score > 0) {
       return t1Text + score;
     } else {
-      return t1Text + (isTrue(WS.state[prefix + 'Current']) ? '.' : '0');
+      return t1Text + (isTrue(WS.state[prefix2 + 'Current']) ? '.' : '0');
     }
   } else if (Number(k.ScoringTrip) >= 10) {
     if (WS.state[prefix + 'Score'] == null) {

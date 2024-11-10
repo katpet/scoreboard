@@ -14,7 +14,8 @@ function penIsNotCurrentFielding(k, v) {
   return (
     k.field === 'EndFielding' &&
     !!v &&
-    !v.startsWith(WS.state['ScoreBoard.CurrentGame.Period(' + WS.state['ScoreBoard.CurrentGame.CurrentPeriodNumber'] + ').CurrentJam'])
+    !v.startsWith(WS.state['ScoreBoard.CurrentGame.Period(' + WS.state['ScoreBoard.CurrentGame.CurrentPeriodNumber'] + ').CurrentJam']) &&
+    !v.startsWith(WS.state['ScoreBoard.CurrentGame.UpcomingJam'])
   );
 }
 

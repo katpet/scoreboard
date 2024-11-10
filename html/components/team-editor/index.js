@@ -11,7 +11,7 @@ $('#teamLogoUpload').fileupload({
     data.submit();
   },
   done: function (e, data) {
-    WS.Set(WS._getContext($('#teamLogoUpload')) + '.Logo', '/images/teamlogo/' + data.files[0].name);
+    WS.Set(WS._getContext($('#teamLogoUpload'))[0] + '.Logo', '/images/teamlogo/' + data.files[0].name);
   },
   fail: function (e, data) {
     console.error('Failed upload', data.errorThrown);
@@ -30,6 +30,10 @@ function tmeOpenStoreDialog(k) {
       },
     },
   });
+}
+
+function tmeIsOrHasPrepared(k, v) {
+  return sbIsNotEmpty(k, v) || !!k.PreparedTeam;
 }
 
 function tmeTriggerUpload() {

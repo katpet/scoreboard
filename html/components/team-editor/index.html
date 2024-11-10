@@ -11,8 +11,8 @@
           sbDisplay="FullName"
         ></option>
       </select>
-      <button class="SyncButton" sbToggle="PreparedTeamConnected" sbClass="sbHide: PreparedTeam: !">Sync Changes</button>
-      <button class="StoreButton sbHide" sbCall="tmeOpenStoreDialog" sbClass="sbHide: PreparedTeam: !==''">Store Team</button>
+      <button class="SyncButton" sbToggle="PreparedTeamConnected" sbClass="sbHide: PreparedTeam: sbIsEmpty">Sync Changes</button>
+      <button class="StoreButton sbHide" sbCall="tmeOpenStoreDialog" sbClass="sbHide: PreparedTeam: tmeIsOrHasPrepared">Store Team</button>
     </span>
   </div>
   <div class="sbGroup Control">
