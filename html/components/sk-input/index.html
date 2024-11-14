@@ -113,7 +113,7 @@
           sbForeach="Skater:: rosterNumber: resort=RosterNumber,onInsert=skiSetupKey"
           sbAttr="rosterNumber: RosterNumber | id: -: 'Team[Team]Jammer[Skater]'"
           sbDisplay="RosterNumber"
-          sbClass="sbActive: p.Skater: === elem.attr('Skater') | HasPlayed: Color: === 'Jammer' | sbHide: Role: === 'NotInGame'"
+          sbClass="sbActive: p.Skater: === elem.attr('Skater') | HasPlayed: Color: === 'Jammer' | sbHide: Role: === 'NotInGame' | sbIneligible: Role: === 'Ineligible'"
           sbSet="p.Skater: elem.attr('Skater')"
         ></button>
       </span>
@@ -139,7 +139,7 @@
           sbForeach="Skater:: rosterNumber: resort=RosterNumber,onInsert=skiSetupKey"
           sbAttr="rosterNumber: RosterNumber | id: -: 'Team[Team]Pivot[Skater]'"
           sbDisplay="RosterNumber"
-          sbClass="sbActive: p.Skater: === elem.attr('Skater') | HasPlayed: Color: === 'Pivot' | sbHide: Role: === 'NotInGame'"
+          sbClass="sbActive: p.Skater: === elem.attr('Skater') | HasPlayed: Color: === 'Pivot' | sbHide: Role: === 'NotInGame' | sbIneligible: Role: === 'Ineligible'"
           sbSet="p.Skater: elem.attr('Skater')"
         ></button>
       </span>

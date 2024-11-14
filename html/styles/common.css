@@ -109,6 +109,8 @@ div.sbSheets { height: calc(100% - 10px); align-items: flex-start; flex-wrap: wr
 .sbVeryVeryImportant.sbVeryVeryImportant { font-size: var(--very-very-important-font-size); font-weight: var(--very-very-important-font-weight); }
 .ui-button.sbVeryVeryImportant { font-size: calc(.9 * var(--very-very-important-font-size)); font-weight: var(--very-very-important-font-weight); }
 
+.sbIneligible { opacity: .35 }
+
 .sbClickable { cursor: pointer; }
 
 .sbInvisible { visibility: hidden; }
