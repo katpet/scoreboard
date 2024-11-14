@@ -46,7 +46,7 @@ public class PeriodImpl extends NumberedScoreBoardEventProviderImpl<Period> impl
 
     @Override
     protected Object computeValue(Value<?> prop, Object value, Object last, Source source, Flag flag) {
-        if (prop == CURRENT_JAM && source == Source.RECALCULATE) {
+        if (prop == CURRENT_JAM && flag != Flag.SPECIAL_CASE) {
             if (numberOf(JAM) > 0) {
                 return getLast(JAM);
             } else if (hasPrevious()) {
@@ -124,7 +124,7 @@ public class PeriodImpl extends NumberedScoreBoardEventProviderImpl<Period> impl
                 Jam next = hasNext() ? getNext().getInitialJam() : game.getUpcomingJam();
                 if (next == null || next == j) { next = new JamImpl(game, j); }
                 j.setNext(next);
-                set(CURRENT_JAM, j);
+                set(CURRENT_JAM, j, Flag.SPECIAL_CASE);
             }
         }
     }
@@ -133,7 +133,7 @@ public class PeriodImpl extends NumberedScoreBoardEventProviderImpl<Period> impl
     protected void itemRemoved(Child<?> prop, ValueWithId item, Source source) {
         if (prop == JAM && source != Source.RENUMBER) {
             Jam j = (Jam) item;
-            if (j == getLast(JAM)) { set(CURRENT_JAM, j.getPrevious()); }
+            if (j == getLast(JAM)) { set(CURRENT_JAM, j.getPrevious(), Flag.SPECIAL_CASE); }
         }
     }
 
@@ -205,7 +205,7 @@ public class PeriodImpl extends NumberedScoreBoardEventProviderImpl<Period> impl
     public void restoreSnapshot(PeriodSnapshot s) {
         synchronized (coreLock) {
             if (s.getId() != getId()) { return; }
-            set(CURRENT_JAM, s.getCurrentJam());
+            set(CURRENT_JAM, s.getCurrentJam(), Flag.SPECIAL_CASE);
         }
     }
 
