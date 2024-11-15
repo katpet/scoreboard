@@ -1,7 +1,7 @@
 WS.AfterLoad(function () {
   _windowFunctions.configureZoom();
   $('body')
-    .attr('showTeam', _windowFunctions.getParam('team'))
+    .attr('showTeam', _windowFunctions.getParam('team') || 'both')
     .attr('sbSheetStyle', _windowFunctions.getParam('pos') || 'plt');
 
   $('#OptionsDialog #OptionZoomable').prop('checked', _windowFunctions.checkParam('zoomable', 1)).button();
@@ -39,7 +39,7 @@ WS.AfterLoad(function () {
 
 function toTitle() {
   const pos = _windowFunctions.getParam('pos').toUpperCase();
-  const team = _windowFunctions.getParam('team');
+  const team = _windowFunctions.getParam('team') || 'both';
   const prefix = 'ScoreBoard.Game(' + _windowFunctions.getParam('game') + ').Team(' + team + ').';
   return (
     pos +
@@ -82,7 +82,7 @@ function setZoom(k, v, elem) {
 }
 
 function advanceFieldings(k) {
-  const team = _windowFunctions.getParam('team');
+  const team = $('body').attr('showTeam');
   if (team === 'both') {
     WS.Set(k + '.Team(1).AdvanceFieldings', true);
     WS.Set(k + '.Team(2).AdvanceFieldings', true);
