@@ -270,6 +270,9 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
             }
             return true;
         }
+        if ((prop == RUNNING_OR_UPCOMING_TEAM_JAM || prop == RUNNING_OR_ENDED_TEAM_JAM) && flag != Flag.SPECIAL_CASE) {
+            return last;
+        }
         return value;
     }
 
@@ -643,9 +646,10 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
     @Override
     public void updateTeamJams() {
         synchronized (coreLock) {
-            set(RUNNING_OR_ENDED_TEAM_JAM, game.getCurrentPeriod().getCurrentJam().getTeamJam(subId));
+            set(RUNNING_OR_ENDED_TEAM_JAM, game.getCurrentPeriod().getCurrentJam().getTeamJam(subId),
+                Flag.SPECIAL_CASE);
             set(RUNNING_OR_UPCOMING_TEAM_JAM,
-                game.isInJam() ? getRunningOrEndedTeamJam() : getRunningOrEndedTeamJam().getNext());
+                game.isInJam() ? getRunningOrEndedTeamJam() : getRunningOrEndedTeamJam().getNext(), Flag.SPECIAL_CASE);
             for (Position p : getAll(POSITION)) { p.updateCurrentFielding(); }
             for (Skater v : getAll(SKATER)) {
                 v.updateFielding(hasFieldingAdvancePending() ? getRunningOrEndedTeamJam()
