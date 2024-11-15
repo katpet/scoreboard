@@ -3,11 +3,11 @@
   WS.Register([prefix + 'AfterSP', prefix + 'Score', prefix + 'Current'], function (k) {
     const selectorPrefix = '[Team="' + k.TeamJam + '"] [Period="' + k.Period + '"] [Jam="' + k.Jam + '"]';
     if (k.ScoringTrip == 1) {
-      $(selectorPrefix + '>.Jam [ScoringTrip="2"]').text(sksToTripPoints(k));
-      $(selectorPrefix + '>.SP [ScoringTrip="2"]').text(sksToTripSpPoints(k));
+      $(selectorPrefix + '>.Jam [ScoringTrip="2"] span').text(sksToTripPoints(k));
+      $(selectorPrefix + '>.SP [ScoringTrip="2"] span').text(sksToTripSpPoints(k));
     } else if (k.ScoringTrip > 10) {
-      $(selectorPrefix + '>.Jam [ScoringTrip="10"]').text(sksToTripPoints(k));
-      $(selectorPrefix + '>.SP [ScoringTrip="10"]').text(sksToTripSpPoints(k));
+      $(selectorPrefix + '>.Jam [ScoringTrip="10"] span').text(sksToTripPoints(k));
+      $(selectorPrefix + '>.SP [ScoringTrip="10"] span').text(sksToTripSpPoints(k));
     }
   });
 
@@ -118,7 +118,7 @@ function sksToTripSpPoints(k) {
     const score = WS.state[prefix2 + 'Score'];
     if (score == null) {
       return t1Text ? t1Text + 'NI' : '';
-    } else if (!isTrue(WS.state[prefix + 'AfterSP'])) {
+    } else if (!isTrue(WS.state[prefix2 + 'AfterSP'])) {
       return '';
     } else if (score > 0) {
       return t1Text + score;
