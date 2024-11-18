@@ -42,7 +42,7 @@ public class SettingsImpl extends ScoreBoardEventProviderImpl<Settings> implemen
     private void setDefaults() {
         set("Overlay.Interactive.Clock", "true");
         set("Overlay.Interactive.Scaling", "100");
-        set("Overlay.Interactive.Score", "On");
+        set("Overlay.Interactive.Score", "true");
         set("Overlay.Interactive.ShowJammers", "true");
         set("Overlay.Interactive.ShowLineups", "true");
         set("Overlay.Interactive.ShowNames", "true");
