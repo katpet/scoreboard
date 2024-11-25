@@ -95,6 +95,10 @@ public class JamImpl extends NumberedScoreBoardEventProviderImpl<Jam> implements
                 }
 
                 delete(source);
+
+                if (parent instanceof Period && this == ((Period) parent).getCurrentJam()) {
+                    ((Period) parent).set(Period.CURRENT_JAM, getPrevious());
+                }
             } else if (prop == INSERT_BEFORE) {
                 if (parent instanceof Period) {
                     parent.add(ownType, new JamImpl(parent, getNumber()));

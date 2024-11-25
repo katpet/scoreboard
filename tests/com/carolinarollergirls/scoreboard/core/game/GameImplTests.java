@@ -1928,6 +1928,12 @@ public class GameImplTests {
         g.startJam();
         assertEquals(4, g.getCurrentPeriod().numberOf(Period.JAM));
         assertEquals(4, g.getCurrentPeriod().getCurrentJam().getNumber());
+
+        g.stopJamTO();
+        g.getCurrentPeriod().getCurrentJam().execute(Jam.DELETE);
+        checkPeriodJamInvariants();
+        assertEquals(3, g.getCurrentPeriod().numberOf(Period.JAM));
+        assertEquals(3, g.getCurrentPeriod().getCurrentJam().getNumber());
     }
 
     @Test
