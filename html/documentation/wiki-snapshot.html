@@ -706,7 +706,7 @@ if("undefined"==typeof jQuery)throw new Error("Bootstrap's JavaScript requires j
           <div class="nav-container">
             <div class="nav-inner" id="scroll-spy" style="width: min-content; overflow: auto; top: 60px; bottom: 0; padding 10px 0 10px 0;">
               <span class="toc">Table of contents</span>
-              <p>This document is a snapshot of the <a href="https://github.com/rollerderby/scoreboard/wiki">CRG Wiki</a> bundled with the v2025.1 release of CRG. If you have internet access it is recommended that you refer to the online version of the Wiki as it may contain relevant updates.</p>
+              <p>This document is a snapshot of the <a href="https://github.com/rollerderby/scoreboard/wiki">CRG Wiki</a> bundled with the v2025.2 release of CRG. If you have internet access it is recommended that you refer to the online version of the Wiki as it may contain relevant updates.</p>
 <h3 id="howtos">Howtos</h3>
 <ul class="nav"><li><strong><a href="#Installing-the-Scoreboard-Software">Installing the Scoreboard Software</a></strong><ul class="nav"><li><span>Instructions for getting the software installed and running on a standalone computer to provide a functioning scoreboard.</span></li></ul></li><li><strong><a href="#Quick-Start-Guide">Quick Start Guide</a></strong><ul class="nav"><li><span>Basic information to run a game with only what is mandatory for a regulation game. See the pages below for the full feature set.</span></li></ul></li><li><strong><a href="#Preparing-a-Game">Preparing a Game</a></strong></li><li><strong><a href="#Scoreboard-Operation">Scoreboard Operation</a></strong></li><li><strong><a href="#Configuring-Hotkeys">Configuring Hotkeys</a></strong></li><li><strong><a href="#Using-the-Scoreboard-on-a-Network">Using the Scoreboard on a Network</a></strong></li><li><strong><a href="#Penalty-Tracking">Penalty Tracking</a></strong></li><li><strong><a href="#Lineup-Tracking">Lineup Tracking</a></strong></li><li><span>The </span><strong>Penalty Lineup Tracking</strong> interface combines the PT and LT inputs for one team on a single screen. See those pages for info how to operate it.</li><li><strong><a href="#Penalty-Box-Timing">Penalty Box Timing</a></strong></li></ul><h3 id="tips-tricks">Tips &amp; Tricks</h3>
 <ul class="nav"><li><strong><a href="#Scoreboard-Best-Practices">Scoreboard Best Practices</a></strong></li><li><strong><a href="#Graphics">Graphics</a></strong><ul class="nav"><li><span>Information on graphics for use with CRG, such as team logos and sponsor banners.</span></li></ul></li><li><strong><a href="#External-Links">External Links</a></strong><ul class="nav"><li><span>Links to other sites with information about CRG Scoreboard.</span></li></ul></li></ul><h3 id="details-about-screens-tabs">Details about Screens / Tabs</h3>
@@ -2343,13 +2343,13 @@ If you want to create a zip archive that you can install on other computers, run
 <h2 id="html-template">HTML Template</h2>
 <p>In addition to basic HTML boilerplate, such as <code>&lt;html&gt;</code> and <code>&lt;head&gt;</code>, your HTML page must link to two scripts.  One is <code>/json/core.js</code>, which provides the basic scoreboard functionality, and the other is <code>/external/jquery/jquery.js</code>, which provides a link to the version of jQuery bundled with CRG. For the screen to work, <code>jquery.js</code> has to be loaded first. Note that for a page named <code>example.html</code> Javascript from <code>example.js</code> and css from <code>example.css</code> in the same folder will be automatically loaded (if present).</p>
 <p><strong>example.html:</strong></p>
-<pre class="hljs"><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-meta-keyword">HTML</span> <span class="hljs-meta-keyword">PUBLIC</span> <span class="hljs-meta-string">"-//W3C//DTD HTML 4.0 Strict//EN"</span>&gt;</span>
+<pre class="hljs"><span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-meta-keyword">HTML</span> <span class="hljs-meta-keyword">PUBLIC</span> <span class="hljs-meta-string">&quot;-//W3C//DTD HTML 4.0 Strict//EN&quot;</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">html</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
   <span class="hljs-tag">&lt;<span class="hljs-name">title</span>&gt;</span>CRG Sample Page<span class="hljs-tag">&lt;/<span class="hljs-name">title</span>&gt;</span>
 
-  <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text/javascript"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"/external/jquery/jquery.js"</span> &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text/javascript"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"/json/core.js"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text/javascript&quot;</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;/external/jquery/jquery.js&quot;</span> &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text/javascript&quot;</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;/json/core.js&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 
 <span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>
 
@@ -2370,22 +2370,22 @@ If you want to create a zip archive that you can install on other computers, run
 <p>Specifically, let&#39;s make a spot to display the period clock. As we go forward, don&#39;t erase the whole file! Just change the bits shown.</p>
 <p><strong>example.html:</strong></p>
 <pre class="hljs"><span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">"ScoreBoard.CurrentGame.Clock(Period).Time"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame.Clock(Period).Time&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span></pre><p>Now we have an area called a <code>div</code> with an attribute named <code>sbDisplay</code>. <code>sbDisplay</code> is a CRG specific attribute that under the hood causes the screen to register for any updates to the Websocket Channel given and display it&#39;s current value in the HTML element to which it is attached.</p>
 <p>If you reload <code>example.html</code>, you will probably find that your screen displays some seemingly random large number. If the period clock in your scoreboard is running, this number will be changing quickly, indicating that there is a connection. But presumably this is not quite what you aimed for.</p>
 <p>The reason is that the scoreboard stores clock values in milliseconds and we thus have to convert the value to a more convenient format.  Try this:</p>
 <p><strong>example.html:</strong></p>
 <pre class="hljs"><span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">"ScoreBoard.CurrentGame.Clock(Period).Time: sbToTime"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame.Clock(Period).Time: sbToTime&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span></pre><p>This adds a second argument to the <code>sbDisplay</code> attribute. For all the CRG specific attributes, multiple arguments are separated by a colon. In the case of <code>sbDisplay</code> the second argument (if present) is treated as the name of a Javascript function that is used to convert the value for display. <code>sbToTime</code> is a conversion function provided by CRG that converts a time in the internal milliseconds format to the minutes:seconds format you are used to seeing on CRG displays.</p>
 <h2 id="changing-things">Changing things</h2>
 <p>In order to use our screen to change something, we need a control of some sort.  How about a button?  Everyone likes buttons!</p>
 <p>Let&#39;s add a button that will start a new jam, and another one which will call a timeout.  That way, we&#39;ll be able to see the effect on the period clock.</p>
 <p><strong>example.html:</strong></p>
 <pre class="hljs"><span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">"ScoreBoard.CurrentGame.Clock(Period).Time: sbToTime"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"ScoreBoard.CurrentGame.StartJam"</span>&gt;</span>Start Jam<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"ScoreBoard.CurrentGame.Timeout"</span>&gt;</span>Timeout<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame.Clock(Period).Time: sbToTime&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame.StartJam&quot;</span>&gt;</span>Start Jam<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame.Timeout&quot;</span>&gt;</span>Timeout<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span></pre><p>If you reload the screen you should see the two buttons and they should do what their label claims.</p>
 <p><code>sbSet</code> is another of the CRG specific HTML attributes. When called with a command Websocket Channel as argument, it will cause the command to be executed.</p>
 <h2 id="controlling-specific-values">Controlling specific values</h2>
@@ -2394,98 +2394,98 @@ Let&#39;s add some more buttons.</p>
 <p><strong>example.html:</strong></p>
 <pre class="hljs"><span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"ScoreBoard.CurrentGame.Clock(Period).Time: -1000: change"</span>&gt;</span>-1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">"ScoreBoard.CurrentGame.Clock(Period).Time: sbToTime"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"ScoreBoard.CurrentGame.Clock(Period).Time: +1000: change"</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame.Clock(Period).Time: -1000: change&quot;</span>&gt;</span>-1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame.Clock(Period).Time: sbToTime&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame.Clock(Period).Time: +1000: change&quot;</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"ScoreBoard.CurrentGame.StartJam"</span>&gt;</span>Start Jam<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"ScoreBoard.CurrentGame.Timeout"</span>&gt;</span>Timeout<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame.StartJam&quot;</span>&gt;</span>Start Jam<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame.Timeout&quot;</span>&gt;</span>Timeout<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span></pre><p>These buttons makes use of the optional second and third argument of <code>sbSet</code> that are useful when the first argument is a value channel instead of a command channel. The second argument can be either a function or a value. If it is a function, the function is evaluated and the cahnnel is set to the result, if it is a value the channel is set to that value. The third argument sets additional flags that are supported by some channels. The <code>change</code> flag is supported by all channels with numeric values and indicates that the value is to be changed by the given amount instead of set to that number.</p>
 <p>The values are <code>-1000</code> and <code>+1000</code> because we are directly working on the internal millisecond values and 1000ms are 1s.</p>
 <p>If we have to make a bigger change, clicking +1 or -1 repeatedly can quickly get tedious. Isn&#39;t there a way to make this more efficient? There is.</p>
 <p><strong>example.html:</strong></p>
 <pre class="hljs"><span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
     <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"ScoreBoard.CurrentGame.Clock(Period).Time: -1000: change"</span>&gt;</span>-1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">sbControl</span>=<span class="hljs-string">"ScoreBoard.CurrentGame.Clock(Period).Time: sbToLongTime: sbFromTime"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">input</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"ScoreBoard.CurrentGame.Clock(Period).Time: +1000: change"</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame.Clock(Period).Time: -1000: change&quot;</span>&gt;</span>-1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text&quot;</span> <span class="hljs-attr">sbControl</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame.Clock(Period).Time: sbToLongTime: sbFromTime&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">input</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame.Clock(Period).Time: +1000: change&quot;</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"ScoreBoard.CurrentGame.StartJam"</span>&gt;</span>Start Jam<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"ScoreBoard.CurrentGame.Timeout"</span>&gt;</span>Timeout<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame.StartJam&quot;</span>&gt;</span>Start Jam<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame.Timeout&quot;</span>&gt;</span>Timeout<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span></pre><p><code>sbControl</code> is the next of the CRG specific attributes. It can be used with <code>input</code> and <code>select</code> elements. Again, the first argument is a channel that is connected to the element. In this case the connection is both ways: If the value in the channel changes, the screen is updated and if the user changes the element on the screen, the channel is updated. The (optional) second argument is a conversion function from channel to screen and the (also optional) third argument is a conversion function from screen to channel. <code>sbToLongTime</code> is similar to <code>sbToTime</code> but it will always display a minutes part, even if it is zero, whereas the latter will display only seconds for times below a minute. <code>sbFromTime</code> is the inverse conversion from the human readable minutes:secoonds to the internal milliseconds. (It can deal with both the long and the short format.)</p>
 <h2 id="grouping-channel-accesses">Grouping channel accesses</h2>
 <p>If you look at the HTML we have so far, you might notice that we are repeating a lot of common prefixes for those channel names. This does happen commonly, as parts of a screen will often deal with channels related to each other. CRG provides a way to avoid this repetition:</p>
 <p><strong>example.html:</strong></p>
-<pre class="hljs"><span class="hljs-tag">&lt;<span class="hljs-name">body</span> <span class="hljs-attr">sbContext</span>=<span class="hljs-string">"ScoreBoard.CurrentGame"</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbContext</span>=<span class="hljs-string">"Clock(Period)"</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"Time: -1000: change"</span>&gt;</span>-1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">sbControl</span>=<span class="hljs-string">"Time: sbToLongTime: sbFromTime"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">input</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"Time: +1000: change"</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<pre class="hljs"><span class="hljs-tag">&lt;<span class="hljs-name">body</span> <span class="hljs-attr">sbContext</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbContext</span>=<span class="hljs-string">&quot;Clock(Period)&quot;</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;Time: -1000: change&quot;</span>&gt;</span>-1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text&quot;</span> <span class="hljs-attr">sbControl</span>=<span class="hljs-string">&quot;Time: sbToLongTime: sbFromTime&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">input</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;Time: +1000: change&quot;</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"StartJam"</span>&gt;</span>Start Jam<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"Timeout"</span>&gt;</span>Timeout<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;StartJam&quot;</span>&gt;</span>Start Jam<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;Timeout&quot;</span>&gt;</span>Timeout<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span></pre><p><code>sbContext</code> will store a prefix that is used for all channels accessed in the element it is placed in and any elements enclosed by it. As you can see in the example, multiple nested instances of <code>sbContext</code> are chained together. If necessary, the prefix can be ignored for an individual channel or an inner <code>sbContext</code> by prefacing it with a slash, e.g. <code>/ScoreBoard.Settings.Setting(ScoreBoard.View_SwapTeams)</code>.</p>
 <h2 id="repeating-screen-elements">Repeating screen elements</h2>
 <p>Now we have a screen that can access the period clock. But there are more clocks in the scoreboard. Obviously we can copy and paste this in order to add other clocks. But then if we later change the code, we have to make this change multiple times over. Wouldn&#39;t it be nice if we only had to maintain one copy and could tell CRG to repeat it for each clock it knows about?</p>
 <p><strong>example.html:</strong></p>
-<pre class="hljs">    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbForeach</span>=<span class="hljs-string">"Clock"</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">"Name"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>: 
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"Time: -1000: change"</span>&gt;</span>-1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">sbControl</span>=<span class="hljs-string">"Time: sbToLongTime: sbFromTime"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">input</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"Time: +1000: change"</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<pre class="hljs">    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbForeach</span>=<span class="hljs-string">&quot;Clock&quot;</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">&quot;Name&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>: 
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;Time: -1000: change&quot;</span>&gt;</span>-1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text&quot;</span> <span class="hljs-attr">sbControl</span>=<span class="hljs-string">&quot;Time: sbToLongTime: sbFromTime&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">input</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;Time: +1000: change&quot;</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></pre><p>And that&#39;s it. If clocks were added or removed, this code would autmatically add/remove them from the screen. (Though in CRG the set of available clocks is fixed, so you won&#39;t be able to see this here. But if you repeat screen elements for Periods or Jams, this is very useful.) Note that <code>sbForeach</code> will implicitly insert an <code>sbContext</code> for the respective instance.</p>
 <p>Now, what if you don&#39;t want to display all of the clocks and want to control the sorting of the ones that are displayed?</p>
 <p><strong>example.html:</strong></p>
-<pre class="hljs">    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbForeach</span>=<span class="hljs-string">"Clock: Jam, Period, Timeout: only"</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">"Name"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>: 
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"Time: -1000: change"</span>&gt;</span>-1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">sbControl</span>=<span class="hljs-string">"Time: sbToLongTime: sbFromTime"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">input</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"Time: +1000: change"</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<pre class="hljs">    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbForeach</span>=<span class="hljs-string">&quot;Clock: Jam, Period, Timeout: only&quot;</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">&quot;Name&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>: 
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;Time: -1000: change&quot;</span>&gt;</span>-1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text&quot;</span> <span class="hljs-attr">sbControl</span>=<span class="hljs-string">&quot;Time: sbToLongTime: sbFromTime&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">input</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;Time: +1000: change&quot;</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></pre><p>As with other attributes, there are optional arguments that can help us. The second argument here is a list of ids (the part in parentheses in the channel name) and the elements corresponding to the channels with these ids will be displayed first and in the given order. By default, all other elements would then be appended afterwards, but giving <code>only</code> as the third argument suppresses them.</p>
 <p>Now this works fine for clocks, where we know all the possible ids ahead of time. But what if we don&#39;t have this luxury?</p>
 <p><strong>example.html:</strong></p>
-<pre class="hljs">    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbForeach</span>=<span class="hljs-string">"Clock: -Intermission, -Lineup: name"</span> <span class="hljs-attr">sbAttr</span>=<span class="hljs-string">"name: Name"</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">"Name"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>: 
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"Time: -1000: change"</span>&gt;</span>-1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">sbControl</span>=<span class="hljs-string">"Time: sbToLongTime: sbFromTime"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">input</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"Time: +1000: change"</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<pre class="hljs">    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbForeach</span>=<span class="hljs-string">&quot;Clock: -Intermission, -Lineup: name&quot;</span> <span class="hljs-attr">sbAttr</span>=<span class="hljs-string">&quot;name: Name&quot;</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">&quot;Name&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>: 
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;Time: -1000: change&quot;</span>&gt;</span>-1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text&quot;</span> <span class="hljs-attr">sbControl</span>=<span class="hljs-string">&quot;Time: sbToLongTime: sbFromTime&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">input</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;Time: +1000: change&quot;</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></pre><p>Here the ids in the second argument are prefaced by <code>-</code> which tells CRG to exclude the elements with these ids. (You can mix this with the former approach of listing ids to place at the front.) And the third argument now gives the name of an attribute that is to be used as a sorting key. <code>sbAttr</code> is used to set this attribute - the first argument gives the name of the attribute, the second is the channel from which it is set and the optional third argument is a conversion function as we know it from other CRG attributes.</p>
 <p>Notes: If you append <code>,num</code> to the attribute in the third argument of <code>sbForeach</code>, sorting is done numerically instead of alphabetically. And instead of giving an attribute to sort by, you can also give a JS function that takes two HTML elements as arguments and returns true if the second argument should be placed before the first one.</p>
 <h2 id="styling-screen-elements">Styling screen elements</h2>
 <p>Often you&#39;ll want to affect how screen elemnts look based on values in channels, not just their text. In our example screen we could highlight, which clocks are currently running.</p>
 <p><strong>example.html:</strong></p>
-<pre class="hljs">    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbForeach</span>=<span class="hljs-string">"Clock: -Intermission, -Lineup: name"</span> <span class="hljs-attr">sbAttr</span>=<span class="hljs-string">"name: Name"</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">"Name"</span> <span class="hljs-attr">sbClass</span>=<span class="hljs-string">"sbActive: Running"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>: 
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"Time: -1000: change"</span>&gt;</span>-1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">sbControl</span>=<span class="hljs-string">"Time: sbToLongTime: sbFromTime"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">input</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"Time: +1000: change"</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<pre class="hljs">    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbForeach</span>=<span class="hljs-string">&quot;Clock: -Intermission, -Lineup: name&quot;</span> <span class="hljs-attr">sbAttr</span>=<span class="hljs-string">&quot;name: Name&quot;</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">&quot;Name&quot;</span> <span class="hljs-attr">sbClass</span>=<span class="hljs-string">&quot;sbActive: Running&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>: 
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;Time: -1000: change&quot;</span>&gt;</span>-1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text&quot;</span> <span class="hljs-attr">sbControl</span>=<span class="hljs-string">&quot;Time: sbToLongTime: sbFromTime&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">input</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;Time: +1000: change&quot;</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></pre><p><code>sbClass</code> works very similar to <code>sbAttr</code>. The first argument is the css class that will be toggled. The second argument is the channel that controls it and the optional third one is a conversion function. If it is omitted, CRG will check if the channel is either the boolean <code>true</code> or the string <code>&quot;true&quot;</code>. There are some special values for the conversion function as well: <code>!</code> will negate the result of the default conversion. And any value that is neither that nor the name of a function will be treated as js code that CRG will append to <code>return v</code> and evaluate. You can use this for simple comparisons like <code>&lt; 3</code>.</p>
 <h2 id="popup-windows">Popup windows</h2>
 <p>To round things off, let&#39;s add a simple popup window to our example screen:</p>
 <p><strong>example.html:</strong></p>
-<pre class="hljs"><span class="hljs-tag">&lt;<span class="hljs-name">body</span> <span class="hljs-attr">sbContext</span>=<span class="hljs-string">"ScoreBoard.CurrentGame"</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbForeach</span>=<span class="hljs-string">"Clock: -Intermission, -Lineup: name"</span> <span class="hljs-attr">sbAttr</span>=<span class="hljs-string">"name: Name"</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">"Name"</span> <span class="hljs-attr">sbClass</span>=<span class="hljs-string">"sbActive: Running"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>: 
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"Time: -1000: change"</span>&gt;</span>-1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"text"</span> <span class="hljs-attr">sbControl</span>=<span class="hljs-string">"Time: sbToLongTime: sbFromTime"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">input</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"Time: +1000: change"</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbCall</span>=<span class="hljs-string">"openPopup"</span>&gt;</span>Popup<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+<pre class="hljs"><span class="hljs-tag">&lt;<span class="hljs-name">body</span> <span class="hljs-attr">sbContext</span>=<span class="hljs-string">&quot;ScoreBoard.CurrentGame&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">sbForeach</span>=<span class="hljs-string">&quot;Clock: -Intermission, -Lineup: name&quot;</span> <span class="hljs-attr">sbAttr</span>=<span class="hljs-string">&quot;name: Name&quot;</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">&quot;Name&quot;</span> <span class="hljs-attr">sbClass</span>=<span class="hljs-string">&quot;sbActive: Running&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>: 
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;Time: -1000: change&quot;</span>&gt;</span>-1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text&quot;</span> <span class="hljs-attr">sbControl</span>=<span class="hljs-string">&quot;Time: sbToLongTime: sbFromTime&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">input</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;Time: +1000: change&quot;</span>&gt;</span>+1<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbCall</span>=<span class="hljs-string">&quot;openPopup&quot;</span>&gt;</span>Popup<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"StartJam"</span>&gt;</span>Start Jam<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"Timeout"</span>&gt;</span>Timeout<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"sbTemplates"</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"ClockDialog"</span> <span class="hljs-attr">sbContext</span>=<span class="hljs-string">"Clock(*)"</span>&gt;</span>
-            The current clock value is <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">"Time: sbToTime"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>.
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;StartJam&quot;</span>&gt;</span>Start Jam<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;Timeout&quot;</span>&gt;</span>Timeout<span class="hljs-tag">&lt;/<span class="hljs-name">Button</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;sbTemplates&quot;</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;ClockDialog&quot;</span> <span class="hljs-attr">sbContext</span>=<span class="hljs-string">&quot;Clock(*)&quot;</span>&gt;</span>
+            The current clock value is <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">&quot;Time: sbToTime&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>.
         <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
     <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
 <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span></pre><p><strong>example.js:</strong></p>
 <pre class="hljs"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">openPopup</span>(<span class="hljs-params">k, v, elem, event</span>) </span>{
-    WS.SetupDialog($(<span class="hljs-string">'#ClockDialog'</span>), k, {
-    <span class="hljs-attr">title</span>: WS.state[k + <span class="hljs-string">'.Name'</span>] + <span class="hljs-string">' Clock'</span>,
+    WS.SetupDialog($(<span class="hljs-string">&#x27;#ClockDialog&#x27;</span>), k, {
+    <span class="hljs-attr">title</span>: WS.state[k + <span class="hljs-string">&#x27;.Name&#x27;</span>] + <span class="hljs-string">&#x27; Clock&#x27;</span>,
     <span class="hljs-attr">width</span>: <span class="hljs-number">400</span>,
     <span class="hljs-attr">buttons</span>: {
       <span class="hljs-attr">Close</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-        $(<span class="hljs-keyword">this</span>).dialog(<span class="hljs-string">'close'</span>);
+        $(<span class="hljs-built_in">this</span>).dialog(<span class="hljs-string">&#x27;close&#x27;</span>);
       },
     },
   });
@@ -2511,12 +2511,12 @@ Let&#39;s add some more buttons.</p>
 <p>Let&#39;s close this tutorial by looking at some functionality that didn&#39;t fit onto the example screen but is still used relative often.</p>
 <h3 id="multiple-instances-of-an-attribute">Multiple instances of an attribute</h3>
 <p>As you write a screen you may want to add multiple conditional css classes, multiple attributes, or multiple function calls to the same HTML element. But HTML doesn&#39;t allow multiple <code>sbClass</code>, <code>sbAttr</code>, or <code>sbCall</code> attributes. Thus there is a syntax to add multiple instances to a single attribute: separate the instances by <code>|</code>, e.g.</p>
-<pre class="hljs"><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">"Name"</span> <span class="hljs-attr">sbClass</span>=<span class="hljs-string">"sbActive: Running | noMoreJam: ^NoMoreJam"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span></pre><p><code>sbActive</code> is a CSS class styled by CRG. The default theme will add a green background to the element.</p>
+<pre class="hljs"><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">&quot;Name&quot;</span> <span class="hljs-attr">sbClass</span>=<span class="hljs-string">&quot;sbActive: Running | noMoreJam: ^NoMoreJam&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span></pre><p><code>sbActive</code> is a CSS class styled by CRG. The default theme will add a green background to the element.</p>
 <p>The <code>^</code> preceding the Channel is another convenience functionality: It tells CRG to discard the last part of the prefix set by <code>sbContext</code>, specifically the last period and anything after it. You can use multiple <code>^</code>s to discard more elements of the context.</p>
 <h3 id="basing-an-attribute-value-on-multiple-channels">Basing an attribute value on multiple channels</h3>
 <p>Sometimes you may want to base a displayed value on the values of multiple channels. In this case you can list all channels separated by commas, as in</p>
-<pre class="hljs"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbClass</span>=<span class="hljs-string">"sbClickMe: InJam, Clock(Jam).Running: sbJamTooLong"</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">"StopJam"</span>&gt;</span>Stop Jam<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></pre><p>In this case the element will be updated whenever one of the values changes. You will usually need a custom conversion function in order to handle such elements. Note that the conversion function will not necessarily be called with the value that&#39;s changed but with the first value that&#39;s set among the list of channels. This is often used when displaying a team name with the option to override it with an alternate name, as in</p>
-<pre class="hljs"><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">"AlternateName(operator), UniformColor, Name"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span></pre><p>When the alternate name is set, it is used. Else uniform colcor is checked and as final option we&#39;ll use the team name.</p>
+<pre class="hljs"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">sbClass</span>=<span class="hljs-string">&quot;sbClickMe: InJam, Clock(Jam).Running: sbJamTooLong&quot;</span> <span class="hljs-attr">sbSet</span>=<span class="hljs-string">&quot;StopJam&quot;</span>&gt;</span>Stop Jam<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></pre><p>In this case the element will be updated whenever one of the values changes. You will usually need a custom conversion function in order to handle such elements. Note that the conversion function will not necessarily be called with the value that&#39;s changed but with the first value that&#39;s set among the list of channels. This is often used when displaying a team name with the option to override it with an alternate name, as in</p>
+<pre class="hljs"><span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">sbDisplay</span>=<span class="hljs-string">&quot;AlternateName(operator), UniformColor, Name&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span></pre><p>When the alternate name is set, it is used. Else uniform colcor is checked and as final option we&#39;ll use the team name.</p>
 <h2 id="further-reading">Further reading</h2>
 <p>If this tutorial served it&#39;s purpose, you should now understand how create screens for CRG. But of course it doesn&#39;t cover all the details and at some point you&#39;ll need information that is not covered here. These are places where you might find further help:</p>
 <ul>
@@ -3185,33 +3185,33 @@ WS.AutoRegister();</pre><h2 id="registering-channels">Registering Channels</h2>
 <p>The <code>WS.Register()</code> command is used to establish a listener for a given channel or set of channels. In order to access a value within the backend state, a corresponding <code>Register</code> command must be executed first.</p>
 <h3 id="ws-register-channel-">WS.Register( &quot;<em>channel</em>&quot; );</h3>
 <p>Simply registers the channel for listening.  </p>
-<pre class="hljs">WS.Register( <span class="hljs-string">"ScoreBoard.CurrentGame.Clock(Period).Time"</span>);</pre><h3 id="ws-register-channel1-channel2-channel3-">WS.Register( [ &quot;<em>channel1</em>&quot;, &quot;<em>channel2</em>&quot;, &quot;<em>channel3</em>&quot; ]);</h3>
+<pre class="hljs">WS.Register( <span class="hljs-string">&quot;ScoreBoard.CurrentGame.Clock(Period).Time&quot;</span>);</pre><h3 id="ws-register-channel1-channel2-channel3-">WS.Register( [ &quot;<em>channel1</em>&quot;, &quot;<em>channel2</em>&quot;, &quot;<em>channel3</em>&quot; ]);</h3>
 <p>Registers a group of channels.</p>
-<pre class="hljs">WS.Register( [<span class="hljs-string">"ScoreBoard.CurrentGame.Clock(Period).Time"</span>, 
-              <span class="hljs-string">"ScoreBoard.CurrentGame.Clock(Jam).Time"</span>
+<pre class="hljs">WS.Register( [<span class="hljs-string">&quot;ScoreBoard.CurrentGame.Clock(Period).Time&quot;</span>, 
+              <span class="hljs-string">&quot;ScoreBoard.CurrentGame.Clock(Jam).Time&quot;</span>
             ]);</pre><h3 id="ws-register-channel-function-key-value-callback-function-">WS.Register( &quot;<em>channel</em>&quot;, function( <em>key</em> , <em>value</em> ) { <em>callback function</em> });</h3>
 <p>Registers a channel for listening and sets a callback function which is executed every time the value of the channel changes.  For example, this could be used to update a scoreboard display every time a score value changes:</p>
-<pre class="hljs">WS.Register( <span class="hljs-string">"ScoreBoard.CurrentGame.Period(1).Jam(13).TeamJam(2).Score"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">k, v</span>) </span>{
+<pre class="hljs">WS.Register( <span class="hljs-string">&quot;ScoreBoard.CurrentGame.Period(1).Jam(13).TeamJam(2).Score&quot;</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">k, v</span>) </span>{
     updateScore(k,v);
 })</pre><p>This example would call the <code>updateScore</code> function each time team 1&#39;s score changed. The first variable, usually called <code>k</code> or <code>key</code>, passes the name of the channel that was updated.  The second variable, usually called <code>v</code> or <code>value</code>, passes the value the channel was changed to. The key and value will be passed into the function using whatever names are declared in the &quot;function&quot; definition.</p>
 <p>In this example, if Team 2&#39;s jam score in Period 1 Jam 13 changed to 3, the following command would be executed:</p>
-<pre class="hljs">updateScore( <span class="hljs-string">"ScoreBoard.CurrentGame.Period(1).Jam(13).TeamJam(2).Score"</span>, <span class="hljs-number">3</span>);</pre><h3 id="ws-register-channel1-channel2-channel3-function-key-value-callback-function-">WS.Register( [ &quot;<em>channel1</em>&quot;, &quot;<em>channel2</em>&quot;, &quot;<em>channel3</em>&quot; ], function( <em>key</em>, <em>value</em>) { <em>callback function</em> });</h3>
+<pre class="hljs">updateScore( <span class="hljs-string">&quot;ScoreBoard.CurrentGame.Period(1).Jam(13).TeamJam(2).Score&quot;</span>, <span class="hljs-number">3</span>);</pre><h3 id="ws-register-channel1-channel2-channel3-function-key-value-callback-function-">WS.Register( [ &quot;<em>channel1</em>&quot;, &quot;<em>channel2</em>&quot;, &quot;<em>channel3</em>&quot; ], function( <em>key</em>, <em>value</em>) { <em>callback function</em> });</h3>
 <p>Registers a listener to execute the same callback function if ANY of the channels in the list change.</p>
-<pre class="hljs">WS.Register([ <span class="hljs-string">"ScoreBoard.CurrentGame.Clock(Period).Running"</span>,
-              <span class="hljs-string">"ScoreBoard.CurrentGame.Clock(Jam).Running"</span>,
-              <span class="hljs-string">"ScoreBoard.CurrentGame.Clock(Intermission).Running"</span>
+<pre class="hljs">WS.Register([ <span class="hljs-string">&quot;ScoreBoard.CurrentGame.Clock(Period).Running&quot;</span>,
+              <span class="hljs-string">&quot;ScoreBoard.CurrentGame.Clock(Jam).Running&quot;</span>,
+              <span class="hljs-string">&quot;ScoreBoard.CurrentGame.Clock(Intermission).Running&quot;</span>
             ], <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">k,v</span>) </span>{
                 manageClocks(k,v);
             });</pre><p>The <code>k</code> or <code>key</code> parameter is used here to allow the callback function to determine which channel changed to trigger execution of the function.</p>
 <h3 id="child-properties">Child Properties</h3>
 <p>Any properties which are children of a registered channel can also be accessed without a further registration.  For example,</p>
-<pre class="hljs">WS.Register( <span class="hljs-string">"ScoreBoard.CurrentGame.Team(1)"</span>);</pre><p>will allow the script to access the property <code>ScoreBoard.CurrentGame.Team(1).Score</code>.</p>
+<pre class="hljs">WS.Register( <span class="hljs-string">&quot;ScoreBoard.CurrentGame.Team(1)&quot;</span>);</pre><p>will allow the script to access the property <code>ScoreBoard.CurrentGame.Team(1).Score</code>.</p>
 <h3 id="wildcards">Wildcards</h3>
 <p>An asterisk may be used as a wildcard for values in parentheses.</p>
-<pre class="hljs">WS.Register( <span class="hljs-string">"ScoreBoard.CurrentGame.Team(*).Name"</span>);</pre><p>will allow the script to acces either <code>ScoreBoard.CurrentGame.Team(1).Name</code> or <code>ScoreBoard.CurrentGame.Team(2).Name</code>.</p>
+<pre class="hljs">WS.Register( <span class="hljs-string">&quot;ScoreBoard.CurrentGame.Team(*).Name&quot;</span>);</pre><p>will allow the script to acces either <code>ScoreBoard.CurrentGame.Team(1).Name</code> or <code>ScoreBoard.CurrentGame.Team(2).Name</code>.</p>
 <h3 id="enriched-keys">Enriched keys</h3>
 <p>If you register multiple keys, keys with wildcards or keys with child properties to a callback function, you will commonly have to access parts of the key in your callback funtion. In order to do so without lots of string parsing, you can access these parts via the key variable as shown:</p>
-<pre class="hljs">WS.Register( <span class="hljs-string">"ScoreBoard.CurrentGame.Team(*).Skater(*)"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">k,v</span>) </span>{
+<pre class="hljs">WS.Register( <span class="hljs-string">&quot;ScoreBoard.CurrentGame.Team(*).Skater(*)&quot;</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">k,v</span>) </span>{
     updateSkater(k,v);
 });
 
@@ -3238,81 +3238,81 @@ And remember that javascript is case sensitive! <code>k.team</code> would not ha
 <p>Once a channel is registered, its value can be retrieved.  This includes from functions that are NOT callback functions for the channel. This is accompished via the <code>WS.state</code> command.</p>
 <pre class="hljs">WS.state[ _channel_ ]</pre><p>This returns the value of a registered channel. It returns <code>undefined</code> for unregistered channels. It also returns <code>undefined</code> if the <code>WS.Connect()</code> and <code>WS.AutoRegister()</code> commands have not been issued.  Note the capitalization and use of square brackets rather than parentheses.</p>
 <p>Example:</p>
-<pre class="hljs">WS.Register( <span class="hljs-string">"ScoreBoard.CurrentGame.Team(1).Score"</span>);
+<pre class="hljs">WS.Register( <span class="hljs-string">&quot;ScoreBoard.CurrentGame.Team(1).Score&quot;</span>);
 
-manageScore(k, v) {
-    <span class="hljs-keyword">var</span> score = WS.state[<span class="hljs-string">"ScoreBoard.CurrentGame.Team(1).Score"</span>];
+<span class="hljs-function"><span class="hljs-title">manageScore</span>(<span class="hljs-params">k, v</span>)</span> {
+    <span class="hljs-keyword">var</span> score = WS.state[<span class="hljs-string">&quot;ScoreBoard.CurrentGame.Team(1).Score&quot;</span>];
 }</pre><h2 id="set-state-values">Set State Values</h2>
 <p>Values in the state can be set using the <code>WS.Set()</code> command.</p>
 <pre class="hljs">WS.Set( _channel_, _value_ );</pre><p>Channels do NOT need to be registered in advance to use the <code>WS.Set()</code> command.</p>
 <p>Example:</p>
-<pre class="hljs">WS.Set(<span class="hljs-string">"ScoreBoard.CurrentGame.Team(1).TripScore"</span>, <span class="hljs-number">4</span>);</pre><p>This will set the score for team 1&#39;s current scoring trip to 4 (and update all dependent values like the team&#39;s jam score and total score).</p>
+<pre class="hljs">WS.Set(<span class="hljs-string">&quot;ScoreBoard.CurrentGame.Team(1).TripScore&quot;</span>, <span class="hljs-number">4</span>);</pre><p>This will set the score for team 1&#39;s current scoring trip to 4 (and update all dependent values like the team&#39;s jam score and total score).</p>
 <p>Note that you can only set one channel at a time and have to give the full channel name. Wildcards will NOT work.</p>
 <h3 id="change-state-value">Change State Value</h3>
 <p>For channels with numeric values you can also use <code>WS.Set()</code> to change the value by some amount instead of setting it directly.</p>
 <p>Example:</p>
-<pre class="hljs">WS.Set(<span class="hljs-string">"ScoreBoard.CurrentGame.Team(1).TripScore"</span>, <span class="hljs-number">-1</span>, <span class="hljs-string">'change'</span>);</pre><p>This will reduce the score of team 1&#39;s current scoring trip by 1 (and also update all dependent values).</p>
+<pre class="hljs">WS.Set(<span class="hljs-string">&quot;ScoreBoard.CurrentGame.Team(1).TripScore&quot;</span>, -<span class="hljs-number">1</span>, <span class="hljs-string">&#x27;change&#x27;</span>);</pre><p>This will reduce the score of team 1&#39;s current scoring trip by 1 (and also update all dependent values).</p>
 <h3 id="commands">Commands</h3>
 <p>There are also some channels that do not have values but are used to issue commands. These commands are executed by setting their value to true. For example:</p>
-<pre class="hljs">WS.Set(<span class="hljs-string">'ScoreBoard.CurrentGame.StartJam'</span>, <span class="hljs-literal">true</span>);</pre><h1 id="low-level-websocket-interface">Low level Websocket interface</h1>
+<pre class="hljs">WS.Set(<span class="hljs-string">&#x27;ScoreBoard.CurrentGame.StartJam&#x27;</span>, <span class="hljs-literal">true</span>);</pre><h1 id="low-level-websocket-interface">Low level Websocket interface</h1>
 <p>CRG exposes a WebSocket endpoint at <code>ws://localhost:8000/WS/</code>, which is used to gain access to and change CRG state. This section documents it.</p>
 <h2 id="actions">Actions</h2>
 <p>Actions are sent by the browser, and look like <code>{&quot;action&quot;: &quot;Action Name&quot;, ...}</code>.</p>
 <h3 id="register">Register</h3>
 <p>The register action specifies state that the client is interested in knowing and getting updates on. These are provided as paths, which represent subtrees of events. For example:</p>
 <pre class="hljs">{
-  <span class="hljs-attr">"action"</span>: <span class="hljs-string">"Register"</span>,
-  <span class="hljs-attr">"paths"</span>: [
-    <span class="hljs-string">"ScoreBoard.CurrentGame.Team(*).Skater"</span>,
-    <span class="hljs-string">"ScoreBoard.CurrentGame.Clock(Jam).Number"</span>
+  <span class="hljs-attr">&quot;action&quot;</span>: <span class="hljs-string">&quot;Register&quot;</span>,
+  <span class="hljs-attr">&quot;paths&quot;</span>: [
+    <span class="hljs-string">&quot;ScoreBoard.CurrentGame.Team(*).Skater&quot;</span>,
+    <span class="hljs-string">&quot;ScoreBoard.CurrentGame.Clock(Jam).Number&quot;</span>
   ]
 }</pre><p>would register the skaters on both teams and the jam number.</p>
 <p>Registrations are cumulative - adding a new path does not cancel prior registrations. On registration each registered channel will get an initaial update and further updates will be provided as the state of the channel changes.</p>
 <h3 id="set">Set</h3>
 <p>Set allows the browser to store state. For example:</p>
 <pre class="hljs">{
-  <span class="hljs-attr">"action"</span>: <span class="hljs-string">"Set"</span>,
-  <span class="hljs-attr">"key"</span>: <span class="hljs-string">"ScoreBoard.CurrentGame.Team(1).TripScore"</span>,
-  <span class="hljs-attr">"value"</span>: <span class="hljs-number">-1</span>,
-  <span class="hljs-attr">"flag"</span>: <span class="hljs-string">"change"</span>
+  <span class="hljs-attr">&quot;action&quot;</span>: <span class="hljs-string">&quot;Set&quot;</span>,
+  <span class="hljs-attr">&quot;key&quot;</span>: <span class="hljs-string">&quot;ScoreBoard.CurrentGame.Team(1).TripScore&quot;</span>,
+  <span class="hljs-attr">&quot;value&quot;</span>: <span class="hljs-number">-1</span>,
+  <span class="hljs-attr">&quot;flag&quot;</span>: <span class="hljs-string">&quot;change&quot;</span>
 }</pre><p>The <code>key</code> must be the full name of a channel, and values must be valid for the given channel or the literal <code>null</code> which will clear/delete the given element. If the backend doesn&#39;t know the channel or the value is invalid for the given channel, an error will be recorded on the backend&#39;s output.</p>
 <p>Valid <code>flag</code>s are <code>change</code> and <code>reset</code>. <code>change</code> can be used for any numerical value and will cause the element to be changed by the given value instead of set to it. <code>reset</code> currently only has an effect for the time on a clock which will be reset it to its initial value.</p>
 <p>If the value changes and a WS client (including the one sending the request) is registered for <code>ScoreBoard.CurrentGame.Team(1).Score</code>, it will be informed about the new value. If the command does not result in a changed value for any reason no notifications will be sent out.</p>
 <h3 id="startnewgame">StartNewGame</h3>
 <p>This action is used to start a new ad-hoc game. It looks like:</p>
 <pre class="hljs">{
-  <span class="hljs-attr">"action"</span>: <span class="hljs-string">"StartNewGame"</span>,
-  <span class="hljs-attr">"data"</span>: {
-    <span class="hljs-attr">"Team1"</span>: _PreparedTeamId_,
-    <span class="hljs-attr">"Team2"</span>: _PreparedTeamId_,
-    <span class="hljs-attr">"Ruleset"</span>: _RulesetId_,
-    <span class="hljs-attr">"IntermissionClock"</span>: _number_,
-    <span class="hljs-attr">"Advance"</span>: <span class="hljs-literal">true</span>|<span class="hljs-literal">false</span>,
-    <span class="hljs-attr">"TO1"</span>: _number_,
-    <span class="hljs-attr">"TO2"</span>: _number_,
-    <span class="hljs-attr">"OR1"</span>: _number_,
-    <span class="hljs-attr">"OR2"</span>: _number_,
-    <span class="hljs-attr">"Points1"</span>: _number_,
-    <span class="hljs-attr">"Points2"</span>: _number_,
-    <span class="hljs-attr">"Period"</span>: _number_,
-    <span class="hljs-attr">"Jam"</span>: _number_,
-    <span class="hljs-attr">"PeriodClock"</span>: _number_
+  <span class="hljs-attr">&quot;action&quot;</span>: <span class="hljs-string">&quot;StartNewGame&quot;</span>,
+  <span class="hljs-attr">&quot;data&quot;</span>: {
+    <span class="hljs-attr">&quot;Team1&quot;</span>: _PreparedTeamId_,
+    <span class="hljs-attr">&quot;Team2&quot;</span>: _PreparedTeamId_,
+    <span class="hljs-attr">&quot;Ruleset&quot;</span>: _RulesetId_,
+    <span class="hljs-attr">&quot;IntermissionClock&quot;</span>: _number_,
+    <span class="hljs-attr">&quot;Advance&quot;</span>: <span class="hljs-literal">true</span>|<span class="hljs-literal">false</span>,
+    <span class="hljs-attr">&quot;TO1&quot;</span>: _number_,
+    <span class="hljs-attr">&quot;TO2&quot;</span>: _number_,
+    <span class="hljs-attr">&quot;OR1&quot;</span>: _number_,
+    <span class="hljs-attr">&quot;OR2&quot;</span>: _number_,
+    <span class="hljs-attr">&quot;Points1&quot;</span>: _number_,
+    <span class="hljs-attr">&quot;Points2&quot;</span>: _number_,
+    <span class="hljs-attr">&quot;Period&quot;</span>: _number_,
+    <span class="hljs-attr">&quot;Jam&quot;</span>: _number_,
+    <span class="hljs-attr">&quot;PeriodClock&quot;</span>: _number_
   }
 }</pre><p>The fields after <code>Advance</code> are only evaluated if the latter is set to <code>true</code>. In that case they are used to fast forward the game to a given state.</p>
 <h3 id="ping">Ping</h3>
 <p>The ping action returns a pong response. This is intended as a heartbeat/keepalive to prevent quiet connections getting closed. Clients are recommended to use this every 30s. It usually looks like:</p>
-<pre class="hljs">{ <span class="hljs-attr">"action"</span>: <span class="hljs-string">"Ping"</span> }</pre><h2 id="state">state</h2>
+<pre class="hljs">{ <span class="hljs-attr">&quot;action&quot;</span>: <span class="hljs-string">&quot;Ping&quot;</span> }</pre><h2 id="state">state</h2>
 <p>State is sent by the backend and will contain a set of channel-value pairs informing the frontend about changed values. For example:</p>
 <pre class="hljs">{
-  <span class="hljs-attr">"state"</span>: {
-    <span class="hljs-attr">"ScoreBoard.Settings.Setting(ScoreBoard.Clock.Sync)"</span>: <span class="hljs-string">"true"</span>,
-    <span class="hljs-attr">"ScoreBoard.Settings.Setting(ScoreBoard.View_BoxStyle)"</span>: <span class="hljs-string">"box_flat_bright"</span>,
+  <span class="hljs-attr">&quot;state&quot;</span>: {
+    <span class="hljs-attr">&quot;ScoreBoard.Settings.Setting(ScoreBoard.Clock.Sync)&quot;</span>: <span class="hljs-string">&quot;true&quot;</span>,
+    <span class="hljs-attr">&quot;ScoreBoard.Settings.Setting(ScoreBoard.View_BoxStyle)&quot;</span>: <span class="hljs-string">&quot;box_flat_bright&quot;</span>,
   }
 }</pre><h2 id="pong">Pong</h2>
 <p>A pong is sent by the backend as reply to a ping. It looks like:</p>
-<pre class="hljs">{ <span class="hljs-attr">"Pong"</span>: <span class="hljs-string">""</span> }</pre><h2 id="error">error</h2>
+<pre class="hljs">{ <span class="hljs-attr">&quot;Pong&quot;</span>: <span class="hljs-string">&quot;&quot;</span> }</pre><h2 id="error">error</h2>
 <p>An error is sent by the backend if a command contained a wrong action. It looks like:</p>
-<pre class="hljs">{ <span class="hljs-attr">"error"</span>: _errorMessage_ }</pre><p class="page" id="WebSocket-Channels"></p><h1>WebSocket Channels</h1>
+<pre class="hljs">{ <span class="hljs-attr">&quot;error&quot;</span>: _errorMessage_ }</pre><p class="page" id="WebSocket-Channels"></p><h1>WebSocket Channels</h1>
 <p>This gives an overview of all the channels/keys used in the WS communication between backend and frontend and in exported JSON files. For documentation on how to use them see <a href="#WebSocket-Commands">WebSocket Commands</a>.</p>
 <ul>
 <li><a href="#elements-in-scoreboard">Elements in <code>ScoreBoard</code></a></li>
