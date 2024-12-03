@@ -386,6 +386,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
             Period p = (Period) value;
             if (p.getCurrentJam().getNext() != getUpcomingJam()) { set(UPCOMING_JAM, p.getCurrentJam().getNext()); }
             while (p.hasNext()) { p.getNext().delete(); }
+            updateTeamJams();
             for (Team t : getAll(TEAM)) { t.recountTimeouts(); }
         }
         if (prop == STATE && (State) value == State.RUNNING && (State) last == State.PREPARED) {
@@ -515,7 +516,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
             if (prop == Period.JAM) {
                 int num = Integer.parseInt(id);
                 if (source.isFile()) {
-                    getUpcomingJam().set(Jam.NUMBER, num, Source.RENUMBER);
+                    getUpcomingJam().set(Jam.NUMBER, num, Source.RENUMBER, Flag.SPECIAL_CASE);
                     return getUpcomingJam();
                 } else if (num == getCurrentPeriod().getCurrentJamNumber()) {
                     // could be a race around jam start
