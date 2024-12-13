@@ -205,8 +205,13 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
                 tripScoreTimerTask = new TimerTask() {
                     @Override
                     public void run() {
-                        execute(ADD_TRIP);
-                        getCurrentTrip().getPrevious().set(ScoringTrip.JAM_CLOCK_END, tripScoreJamTime);
+                        scoreBoard.runInBatch(new Runnable() {
+                            @Override
+                            public void run() {
+                                execute(ADD_TRIP);
+                                getCurrentTrip().getPrevious().set(ScoringTrip.JAM_CLOCK_END, tripScoreJamTime);
+                            }
+                        });
                     }
                 };
                 tripScoreTimer.schedule(tripScoreTimerTask, 4000);

@@ -48,7 +48,12 @@ public class ScoreAdjustmentImpl extends ScoreBoardEventProviderImpl<ScoreAdjust
                 closeTimerTask = new TimerTask() {
                     @Override
                     public void run() {
-                        set(OPEN, false);
+                        scoreBoard.runInBatch(new Runnable() {
+                            @Override
+                            public void run() {
+                                set(OPEN, false);
+                            }
+                        });
                     }
                 };
                 closeTimer.schedule(closeTimerTask, 4000);
