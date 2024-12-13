@@ -101,7 +101,7 @@ public class JettyServletScoreBoardController {
     public void start() {
         try {
             server.start();
-        } catch (Exception e) { throw new RuntimeException("Could not start server : " + e.getMessage()); }
+        } catch (Exception e) { throw new RuntimeException("Could not start server : " + e.toString()); }
 
         Logger.printMessage("");
         Logger.printMessage("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
@@ -115,8 +115,10 @@ public class JettyServletScoreBoardController {
             while (urls.hasNext()) { Logger.printMessage("	" + urls.next().toString()); }
         } catch (MalformedURLException muE) {
             Logger.printMessage("Internal error: malformed URL from Server Connector: " + muE.getMessage());
+            Logger.printStackTrace(muE);
         } catch (SocketException sE) {
             Logger.printMessage("Internal error: socket exception from Server Connector: " + sE.getMessage());
+            Logger.printStackTrace(sE);
         }
         Logger.printMessage("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
         Logger.printMessage("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");

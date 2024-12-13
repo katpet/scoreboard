@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +44,7 @@ public class Main extends Logger {
         parseArgv(argv);
         logFile.getParentFile().mkdirs();
         setLogger(this);
+        Logger.printMessage("Starting up at " + LocalDateTime.now().toString());
         importFromOldVersion();
         start();
         if (guiFrameText != null) {
@@ -81,20 +83,26 @@ public class Main extends Logger {
 
         // Only start auto-saves once everything is loaded in.
         final AutoSaveJSONState autosaver = new AutoSaveJSONState(jsm, autoSaveDir, useMetrics);
-        jetty.start();
+        try {
+            jetty.start();
+        } catch (Throwable e) {
+            Logger.printMessage("Could not start server");
+            stop(e);
+        }
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
                 // Save any changes since last regular autosave before we shutdown.
                 autosaver.run();
+                Logger.printMessage("Stopping at " + LocalDateTime.now().toString());
             }
         });
     }
 
-    private void stop(Exception ex) {
+    private void stop(Throwable ex) {
         if (ex != null) { Logger.printStackTrace(ex); }
-        Logger.printMessage("Fatal error.   Exiting in 15 seconds.");
+        Logger.printMessage(LocalDateTime.now().toString() + ": Fatal error.   Exiting in 15 seconds.");
         try {
             Thread.sleep(15000);
         } catch (Exception e) { /* Probably Ctrl-C or similar, ignore. */

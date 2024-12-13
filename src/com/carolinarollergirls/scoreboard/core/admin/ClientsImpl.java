@@ -27,8 +27,10 @@ public class ClientsImpl extends ScoreBoardEventProviderImpl<Clients> implements
             if (d.mayWrite()) { hasWritableClient = true; }
         }
         if (!hasWritableClient) {
-            Logger.printMessage("No device with write access remaining -- enabling write access for new devices");
+            Logger.printMessage(
+                "No device with write access remaining -- enabling write access for new devices and local device");
             set(NEW_DEVICE_WRITE, true);
+            set(ALL_LOCAL_DEVICES_WRITE, true);
         }
     }
 
