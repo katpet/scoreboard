@@ -50,7 +50,7 @@
           <td class="Role Jammer sbShowOnLt" rowspan="2" sbClass="OnTrack: Role: ==='Jammer'" sbSet="Role: 'Jammer'">
             <span class="Num" sbDisplay="RosterNumber"></span><span class="Pos">J</span>
           </td>
-          <td class="Role Pivot sbShowOnLt" rowspan="2" sbClass="OnTrack: Role: ==='Pivot'" sbSet="Role: 'Pivot'">
+          <td class="Role Pivot sbShowOnLt" rowspan="2" sbClass="OnTrack: Role: ==='Pivot'" sbCall="pltSetPivot">
             <span class="Num" sbDisplay="RosterNumber"></span><span class="Pos">P</span>
           </td>
           <td class="Role Blocker sbShowOnLt" rowspan="2" sbClass="OnTrack: Role: ==='Blocker'" sbCall="pltSetBlocker">
@@ -114,7 +114,15 @@
           sbClass="sbHide: ^NoPivot: ! | sbInBox: ^PenaltyBox | sbUnserved: ^HasUnserved"
           sbDisplay="RosterNumber: 'Replace ' + v"
           sbSet="Skater: '[Skater]'"
-          sbCall="sbCloseDialog"
+          sbCall="pltFinishReplace"
+        ></button>
+        <button
+          class="Replace"
+          sbContext="^Position(Pivot)"
+          sbClass="sbHide: ^NoPivot | sbInBox: ^PenaltyBox | sbUnserved: ^HasUnserved"
+          sbDisplay="RosterNumber: 'Replace ' + v + ' (Pivot)'"
+          sbSet="Skater: '[Skater]' | ^NoPivot"
+          sbCall="pltFinishReplace"
         ></button>
         <button
           class="Replace"
@@ -122,7 +130,7 @@
           sbClass="sbInBox: ^PenaltyBox | sbUnserved: ^HasUnserved"
           sbDisplay="RosterNumber: 'Replace ' + v"
           sbSet="Skater: '[Skater]'"
-          sbCall="sbCloseDialog"
+          sbCall="pltFinishReplace"
         ></button>
         <button
           class="Replace"
@@ -130,7 +138,7 @@
           sbClass="sbInBox: ^PenaltyBox | sbUnserved: ^HasUnserved"
           sbDisplay="RosterNumber: 'Replace ' + v"
           sbSet="Skater: '[Skater]'"
-          sbCall="sbCloseDialog"
+          sbCall="pltFinishReplace"
         ></button>
         <button
           class="Replace"
@@ -138,7 +146,7 @@
           sbClass="sbInBox: ^PenaltyBox | sbUnserved: ^HasUnserved"
           sbDisplay="RosterNumber: 'Replace ' + v"
           sbSet="Skater: '[Skater]'"
-          sbCall="sbCloseDialog"
+          sbCall="pltFinishReplace"
         ></button>
         <button sbCall="sbCloseDialog">Do not add <span sbDisplay="RosterNumber"></span></button>
       </div>
