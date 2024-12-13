@@ -56,7 +56,10 @@ public class AutoSaveJSONState implements Runnable {
                 if (from.exists()) { from.renameTo(to); }
             }
             writeAutoSave(getFile(0));
-        } catch (Exception e) { Logger.printMessage("WARNING: Unable to auto-save scoreboard : " + e.getMessage()); }
+        } catch (Exception e) {
+            Logger.printMessage("WARNING: Unable to auto-save scoreboard : " + e.getMessage());
+            Logger.printStackTrace(e);
+        }
         if (useMetrics) { timer.observeDuration(); }
     }
 
@@ -75,7 +78,10 @@ public class AutoSaveJSONState implements Runnable {
             out.write(json);
             out.close();
             tmp.renameTo(file); // This is atomic.
-        } catch (Exception e) { Logger.printMessage("Error writing JSON autosave: " + e.getMessage()); } finally {
+        } catch (Exception e) {
+            Logger.printMessage("Error writing JSON autosave: " + e.getMessage());
+            Logger.printStackTrace(e);
+        } finally {
             if (out != null) {
                 try {
                     out.close();
@@ -105,6 +111,7 @@ public class AutoSaveJSONState implements Runnable {
                     } catch (Exception e) {
                         Logger.printMessage("Could not back up auto-save file '" + from.getName() +
                                             "' : " + e.getMessage());
+                        Logger.printStackTrace(e);
                     }
                 }
             } while (n++ < AUTOSAVE_FILES);
