@@ -29,10 +29,18 @@
 })();
 
 function pltSetBlocker(k) {
-  if (isTrue(WS.state[k.upTo('Team') + '.AllBlockersSet'])) {
-    _pltOpenReplaceDialog(k);
+  if (isTrue(WS.state[k.upTo('Team') + '.AllBlockersSet']) && WS.state[k + '.Role'] !== 'Pivot' && WS.state[k + '.Role'] !== 'Blocker') {
+    _pltOpenReplaceDialog(k, 'Blocker');
   } else {
     WS.Set(k + '.Role', 'Blocker');
+  }
+}
+
+function pltSetPivot(k) {
+  if (isTrue(WS.state[k.upTo('Team') + '.AllBlockersSet']) && isTrue(WS.state[k.upTo('Team') + '.NoPivot']) && WS.state[k + '.Role'] !== 'Blocker') {
+    _pltOpenReplaceDialog(k, 'Pivot');
+  } else {
+    WS.Set(k + '.Role', 'Pivot');
   }
 }
 
@@ -98,8 +106,17 @@ function _pltUpdateCurrentJamStyle() {
 //
 //###################################################################
 
-function _pltOpenReplaceDialog(k) {
+let pltReplacePath = '';
+let pltReplaceTarget = '';
+
+function _pltOpenReplaceDialog(k, pos) {
+  pltReplacePath = k + '.Role'; pltReplaceTarget = pos;
   WS.SetupDialog($('#BlockerReplaceDialog'), k, { modal: true, title: 'Replace Blocker', width: '400px' });
+}
+
+function pltFinishReplace(k, v, elem, event) {
+  sbCloseDialog(k, v, elem, event);
+  WS.Set(pltReplacePath, pltReplaceTarget);
 }
 
 //###################################################################
@@ -138,9 +155,9 @@ function pltCurrentIfInvalid(k, v, elem) {
   return elem.children('[value="' + v + '"]').length
     ? v
     : WS.state[k.upTo('Period') + '.CurrentJam'] ||
-        WS.state[
-          'ScoreBoard.Game(' + k.Game + ').Period(' + WS.state['ScoreBoard.Game(' + k.Game + ').CurrentPeriodNumber'] + ').CurrentJam'
-        ];
+    WS.state[
+    'ScoreBoard.Game(' + k.Game + ').Period(' + WS.state['ScoreBoard.Game(' + k.Game + ').CurrentPeriodNumber'] + ').CurrentJam'
+    ];
 }
 
 function pltIsThisPeriod(k, v, elem) {
@@ -200,7 +217,7 @@ function _pltOpenAnnotationEditor(gameId, teamId, skaterId) {
       WS.state['ScoreBoard.Game(' + gameId + ').CurrentPeriodNumber'] +
       ').Jam(' +
       WS.state[
-        'ScoreBoard.Game(' + gameId + ').Period(' + WS.state['ScoreBoard.Game(' + gameId + ').CurrentPeriodNumber'] + ').CurrentJamNumber'
+      'ScoreBoard.Game(' + gameId + ').Period(' + WS.state['ScoreBoard.Game(' + gameId + ').CurrentPeriodNumber'] + ').CurrentJamNumber'
       ] +
       fieldingPrefix;
   } else {
