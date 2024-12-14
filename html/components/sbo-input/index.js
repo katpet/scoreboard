@@ -157,7 +157,7 @@ function opOpenOvertimeDialog(k) {
 }
 
 function opPossiblInjCont(k) {
-  return !isTrue(k.upTo('Game') + '.Rule(Jam.InjuryContinuation)') || !isTrue(k.upTo('Game') + '.Team(1).Injury');
+  return !isTrue(WS.state[k.upTo('Game') + '.Rule(Jam.InjuryContinuation)']) || !isTrue(WS.state[k.upTo('Game') + '.Team(1).Injury']);
 }
 
 function opUndo(k) {
