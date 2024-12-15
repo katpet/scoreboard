@@ -8,7 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -25,9 +24,15 @@ import io.prometheus.client.Histogram;
 
 public class AutoSaveJSONState implements Runnable {
 
-    public AutoSaveJSONState(JSONStateManager jsm, File dir) {
+    public AutoSaveJSONState(JSONStateManager jsm, File dir, boolean useMetrics) {
         this.dir = dir;
         this.jsm = jsm;
+        this.useMetrics = useMetrics;
+        autosaveDuration = useMetrics ? Histogram.build()
+                                            .name("crg_json_autosave_write_duration_seconds")
+                                            .help("Time spent writing JSON autosaves to disk")
+                                            .register()
+                                      : null;
 
         try {
             FileUtils.forceMkdir(dir);
@@ -41,7 +46,7 @@ public class AutoSaveJSONState implements Runnable {
 
     @Override
     public synchronized void run() {
-        Histogram.Timer timer = autosaveDuration.startTimer();
+        Histogram.Timer timer = useMetrics ? autosaveDuration.startTimer() : null;
         try {
             int n = AUTOSAVE_FILES;
             getFile(n).delete();
@@ -51,8 +56,11 @@ public class AutoSaveJSONState implements Runnable {
                 if (from.exists()) { from.renameTo(to); }
             }
             writeAutoSave(getFile(0));
-        } catch (Exception e) { Logger.printMessage("WARNING: Unable to auto-save scoreboard : " + e.getMessage()); }
-        timer.observeDuration();
+        } catch (Exception e) {
+            Logger.printMessage("WARNING: Unable to auto-save scoreboard : " + e.getMessage());
+            Logger.printStackTrace(e);
+        }
+        if (useMetrics) { timer.observeDuration(); }
     }
 
     private void writeAutoSave(File file) {
@@ -62,7 +70,7 @@ public class AutoSaveJSONState implements Runnable {
             String json = JSON.std.with(JSON.Feature.PRETTY_PRINT_OUTPUT)
                               .composeString()
                               .startObject()
-                              .putObject("state", new TreeMap<>(jsm.getState()))
+                              .putObject("state", jsm.getState())
                               .end()
                               .finish();
             tmp = File.createTempFile(file.getName(), ".tmp", dir);
@@ -70,7 +78,10 @@ public class AutoSaveJSONState implements Runnable {
             out.write(json);
             out.close();
             tmp.renameTo(file); // This is atomic.
-        } catch (Exception e) { Logger.printMessage("Error writing JSON autosave: " + e.getMessage()); } finally {
+        } catch (Exception e) {
+            Logger.printMessage("Error writing JSON autosave: " + e.getMessage());
+            Logger.printStackTrace(e);
+        } finally {
             if (out != null) {
                 try {
                     out.close();
@@ -100,6 +111,7 @@ public class AutoSaveJSONState implements Runnable {
                     } catch (Exception e) {
                         Logger.printMessage("Could not back up auto-save file '" + from.getName() +
                                             "' : " + e.getMessage());
+                        Logger.printStackTrace(e);
                     }
                 }
             } while (n++ < AUTOSAVE_FILES);
@@ -140,13 +152,11 @@ public class AutoSaveJSONState implements Runnable {
 
     private File dir;
     private JSONStateManager jsm;
+    private boolean useMetrics;
     private ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     private static final int AUTOSAVE_FILES = 6;
     private static final int INTERVAL_SECONDS = 10;
 
-    private static final Histogram autosaveDuration = Histogram.build()
-                                                          .name("crg_json_autosave_write_duration_seconds")
-                                                          .help("Time spent writing JSON autosaves to disk")
-                                                          .register();
+    private final Histogram autosaveDuration;
 }

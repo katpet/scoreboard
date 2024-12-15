@@ -13,7 +13,7 @@ import com.carolinarollergirls.scoreboard.core.interfaces.Clock;
 import com.carolinarollergirls.scoreboard.core.interfaces.Fielding;
 import com.carolinarollergirls.scoreboard.core.interfaces.FloorPosition;
 import com.carolinarollergirls.scoreboard.core.interfaces.Game;
-import com.carolinarollergirls.scoreboard.core.interfaces.Penalty;
+import com.carolinarollergirls.scoreboard.core.interfaces.Game.State;
 import com.carolinarollergirls.scoreboard.core.interfaces.Period;
 import com.carolinarollergirls.scoreboard.core.interfaces.Position;
 import com.carolinarollergirls.scoreboard.core.interfaces.PreparedTeam;
@@ -82,7 +82,10 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
             .addIndirectSource(g, Game.CURRENT_TIMEOUT, Timeout.OWNER)
             .addIndirectSource(g, Game.CURRENT_TIMEOUT, Timeout.REVIEW)
             .addIndirectSource(g, Game.CURRENT_TIMEOUT, Timeout.RUNNING);
-        setRecalculated(FULL_NAME).addSource(this, LEAGUE_NAME).addSource(this, TEAM_NAME);
+        setRecalculated(FULL_NAME)
+            .addSource(this, LEAGUE_NAME)
+            .addSource(this, TEAM_NAME)
+            .addSource(this, UNIFORM_COLOR);
         setRecalculated(DISPLAY_NAME)
             .addSource(this, LEAGUE_NAME)
             .addSource(this, TEAM_NAME)
@@ -102,7 +105,26 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
         setCopy(ALTERNATE_NAME, this, PREPARED_TEAM, ALTERNATE_NAME, false, PREPARED_TEAM_CONNECTED);
         setCopy(COLOR, this, PREPARED_TEAM, COLOR, false, PREPARED_TEAM_CONNECTED);
         setCopy(ACTIVE_SCORE_ADJUSTMENT_AMOUNT, this, ACTIVE_SCORE_ADJUSTMENT, ScoreAdjustment.AMOUNT, false);
+        setRecalculated(ALL_BLOCKERS_SET)
+            .addSource(getPosition(FloorPosition.PIVOT), Position.SKATER)
+            .addSource(getPosition(FloorPosition.BLOCKER1), Position.SKATER)
+            .addSource(getPosition(FloorPosition.BLOCKER2), Position.SKATER)
+            .addSource(getPosition(FloorPosition.BLOCKER3), Position.SKATER);
         providers.put(skaterListener, null);
+    }
+    public TeamImpl(Game g, Team source) {
+        this(g, source.getProviderId());
+        set(PREPARED_TEAM_CONNECTED, source.get(PREPARED_TEAM_CONNECTED));
+        set(PREPARED_TEAM, source.get(PREPARED_TEAM));
+        set(UNIFORM_COLOR, source.get(UNIFORM_COLOR));
+        if (!get(PREPARED_TEAM_CONNECTED)) {
+            set(LEAGUE_NAME, source.get(LEAGUE_NAME));
+            set(TEAM_NAME, source.get(TEAM_NAME));
+            set(LOGO, source.get(LOGO));
+        }
+        for (ValWithId an : source.getAll(ALTERNATE_NAME)) { add(ALTERNATE_NAME, an); }
+        for (ValWithId c : source.getAll(COLOR)) { add(COLOR, c); }
+        for (Skater s : source.getAll(SKATER)) { add(SKATER, new SkaterImpl(this, s)); }
     }
 
     @Override
@@ -113,9 +135,9 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
     @Override
     protected Object computeValue(Value<?> prop, Object value, Object last, Source source, Flag flag) {
         if (prop == FULL_NAME) {
-            String league = get(LEAGUE_NAME);
-            String team = get(TEAM_NAME);
-            String color = get(UNIFORM_COLOR);
+            String league = get(LEAGUE_NAME) == null ? "" : get(LEAGUE_NAME);
+            String team = get(TEAM_NAME) == null ? "" : get(TEAM_NAME);
+            String color = get(UNIFORM_COLOR) == null ? "" : get(UNIFORM_COLOR);
             String in = value == null ? "" : (String) value;
             if (!"".equals(league)) {
                 if (!"".equals(team)) {
@@ -141,9 +163,9 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
         }
         if (prop == DISPLAY_NAME) {
             String setting = scoreBoard.getSettings().get(SETTING_DISPLAY_NAME);
-            if (OPTION_TEAM_NAME.equals(setting) && !"".equals(get(TEAM_NAME))) {
+            if (OPTION_TEAM_NAME.equals(setting) && get(TEAM_NAME) != null && !"".equals(get(TEAM_NAME))) {
                 return get(TEAM_NAME);
-            } else if (!OPTION_FULL_NAME.equals(setting) && !"".equals(get(LEAGUE_NAME))) {
+            } else if (!OPTION_FULL_NAME.equals(setting) && get(LEAGUE_NAME) != null && !"".equals(get(LEAGUE_NAME))) {
                 return get(LEAGUE_NAME);
             } else {
                 return get(FULL_NAME);
@@ -151,15 +173,16 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
         }
         if (prop == FILE_NAME) {
             String setting = scoreBoard.getSettings().get(SETTING_FILE_NAME);
-            if (OPTION_TEAM_NAME.equals(setting) && !"".equals(get(TEAM_NAME))) {
+            if (OPTION_TEAM_NAME.equals(setting) && get(TEAM_NAME) != null && !"".equals(get(TEAM_NAME))) {
                 return get(TEAM_NAME);
-            } else if (OPTION_LEAGUE_NAME.equals(setting) && !"".equals(get(LEAGUE_NAME))) {
+            } else if (OPTION_LEAGUE_NAME.equals(setting) && get(LEAGUE_NAME) != null && !"".equals(get(LEAGUE_NAME))) {
                 return get(LEAGUE_NAME);
             } else {
                 return get(FULL_NAME);
             }
         }
         if (prop == INITIALS) { return get(DISPLAY_NAME).replaceAll("[^\\p{Lu}]", ""); }
+        if (prop == UNIFORM_COLOR && "".equals(value)) { return null; }
         if (prop == IN_TIMEOUT) {
             Timeout t = game.getCurrentTimeout();
             return t.isRunning() && this == t.getOwner() && !t.isReview();
@@ -187,8 +210,13 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
                 tripScoreTimerTask = new TimerTask() {
                     @Override
                     public void run() {
-                        execute(ADD_TRIP);
-                        getCurrentTrip().getPrevious().set(ScoringTrip.JAM_CLOCK_END, tripScoreJamTime);
+                        scoreBoard.runInBatch(new Runnable() {
+                            @Override
+                            public void run() {
+                                execute(ADD_TRIP);
+                                getCurrentTrip().getPrevious().set(ScoringTrip.JAM_CLOCK_END, tripScoreJamTime);
+                            }
+                        });
                     }
                 };
                 tripScoreTimer.schedule(tripScoreTimerTask, 4000);
@@ -242,12 +270,18 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
         }
         if (prop == TOTAL_PENALTIES) {
             int count = 0;
-            for (Skater s : getAll(SKATER)) {
-                for (Penalty p : s.getAll(Skater.PENALTY)) {
-                    if (!Skater.FO_EXP_ID.equals(p.getProviderId())) { count++; }
-                }
-            }
+            for (Skater s : getAll(SKATER)) { count += s.get(Skater.PENALTY_COUNT); }
             return count;
+        }
+        if (prop == ALL_BLOCKERS_SET) {
+            for (Position p : getAll(POSITION)) {
+                if (p.getFloorPosition() == FloorPosition.JAMMER) { continue; }
+                if (p.getSkater() == null) { return false; }
+            }
+            return true;
+        }
+        if ((prop == RUNNING_OR_UPCOMING_TEAM_JAM || prop == RUNNING_OR_ENDED_TEAM_JAM) && flag != Flag.SPECIAL_CASE) {
+            return last;
         }
         return value;
     }
@@ -269,6 +303,7 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
                     .setRole(FloorPosition.PIVOT.getRole(getRunningOrUpcomingTeamJam()));
             }
             if ((Boolean) value && isLead()) { set(LOST, true); }
+            if ((Boolean) value && !getOtherTeam().isLead() && isOnInitial()) { set(LOST, true); }
         } else if ((prop == CALLOFF || prop == INJURY) && game.isInJam() && (Boolean) value) {
             game.stopJamTO();
         } else if (prop == CAPTAIN && last != null) {
@@ -290,6 +325,8 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
             officialReview();
         } else if (prop == TIMEOUT) {
             timeout();
+        } else if (prop == CLEAR_SKATERS && game.get(Game.STATE) == State.PREPARED) {
+            for (Skater s : getAll(SKATER)) { remove(SKATER, s); }
         }
     }
 
@@ -317,7 +354,7 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
     protected void itemAdded(Child<?> prop, ValueWithId item, Source source) {
         if (prop == TIME_OUT) { recountTimeouts(); }
         if (prop == SCORE_ADJUSTMENT) { scoreListener.addSource(((ScoreAdjustment) item), ScoreAdjustment.AMOUNT); }
-        if (prop == SKATER) { penaltyListener.addSource((Skater) item, Skater.PENALTY); }
+        if (prop == SKATER) { penaltyListener.addSource((Skater) item, Skater.PENALTY_COUNT); }
     }
 
     @Override
@@ -362,6 +399,7 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
         synchronized (coreLock) {
             advanceFieldings(); // if this hasn't been manually triggered between jams, do it now
             getCurrentTrip().set(ScoringTrip.CURRENT, true);
+            for (BoxTrip bt : getAll(BOX_TRIP)) { bt.startJam(); }
             unpauseBoxClocks();
         }
     }
@@ -379,6 +417,7 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
             set(FIELDING_ADVANCE_PENDING, true);
 
             updateTeamJams();
+            for (BoxTrip bt : getAll(BOX_TRIP)) { bt.stopJam(); }
 
             Map<Skater, Role> toField = new HashMap<>();
             TeamJam upcomingTJ = getRunningOrUpcomingTeamJam();
@@ -493,8 +532,10 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
     @Override
     public void loadPreparedTeam(PreparedTeam pt) {
         synchronized (coreLock) {
-            set(PREPARED_TEAM_CONNECTED, pt != null, Flag.SPECIAL_CASE);
-            set(PREPARED_TEAM, pt);
+            if (pt != null) {
+                set(PREPARED_TEAM_CONNECTED, pt != null, Flag.SPECIAL_CASE);
+                set(PREPARED_TEAM, pt);
+            }
         }
     }
 
@@ -514,9 +555,7 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
                 break;
             }
         }
-        if (!hasColor) {
-            pt.add(PreparedTeam.UNIFORM_COLOR, new ValWithId(UUID.randomUUID().toString(), get(UNIFORM_COLOR)));
-        }
+        if (!hasColor) { pt.add(PreparedTeam.UNIFORM_COLOR, new ValWithId(get(UNIFORM_COLOR), get(UNIFORM_COLOR))); }
         for (ValWithId an : getAll(ALTERNATE_NAME)) {
             if (pt.get(ALTERNATE_NAME, an.getId()) == null) {
                 pt.add(ALTERNATE_NAME, new ValWithId(an.getId(), an.getValue()));
@@ -634,9 +673,10 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
     @Override
     public void updateTeamJams() {
         synchronized (coreLock) {
-            set(RUNNING_OR_ENDED_TEAM_JAM, game.getCurrentPeriod().getCurrentJam().getTeamJam(subId));
+            set(RUNNING_OR_ENDED_TEAM_JAM, game.getCurrentPeriod().getCurrentJam().getTeamJam(subId),
+                Flag.SPECIAL_CASE);
             set(RUNNING_OR_UPCOMING_TEAM_JAM,
-                game.isInJam() ? getRunningOrEndedTeamJam() : getRunningOrEndedTeamJam().getNext());
+                game.isInJam() ? getRunningOrEndedTeamJam() : getRunningOrEndedTeamJam().getNext(), Flag.SPECIAL_CASE);
             for (Position p : getAll(POSITION)) { p.updateCurrentFielding(); }
             for (Skater v : getAll(SKATER)) {
                 v.updateFielding(hasFieldingAdvancePending() ? getRunningOrEndedTeamJam()
@@ -870,6 +910,11 @@ public class TeamImpl extends ScoreBoardEventProviderImpl<Team> implements Team 
     @Override
     public boolean isLead() {
         return get(LEAD);
+    }
+
+    @Override
+    public boolean isOnInitial() {
+        return get(NO_INITIAL);
     }
 
     @Override

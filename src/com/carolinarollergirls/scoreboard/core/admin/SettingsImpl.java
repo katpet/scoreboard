@@ -22,34 +22,41 @@ public class SettingsImpl extends ScoreBoardEventProviderImpl<Settings> implemen
 
     @Override
     protected void itemAdded(Child<?> prop, ValueWithId item, Source source) {
-        if (item != null && ScoreBoard.SETTING_STATSBOOK_INPUT.equals(item.getId())) {
-            boolean found = Paths.get(item.getValue()).toFile().canRead();
-            if (found && scoreBoard.isInitialLoadDone()) {
-                StatsbookExporter.preload(item.getValue(), getScoreBoard());
-            } else if (!found) {
-                getScoreBoard().set(ScoreBoard.BLANK_STATSBOOK_FOUND, "none");
+        if (item != null) {
+            if (ScoreBoard.SETTING_STATSBOOK_INPUT.equals(item.getId())) {
+                boolean found = Paths.get(item.getValue()).toFile().canRead();
+                if (found && scoreBoard.isInitialLoadDone()) {
+                    StatsbookExporter.preload(item.getValue(), getScoreBoard());
+                    for (Game g : scoreBoard.getAll(ScoreBoard.GAME)) { g.clearStatsbookError(); }
+                } else if (!found) {
+                    getScoreBoard().set(ScoreBoard.BLANK_STATSBOOK_FOUND, "none");
+                }
+            } else if (ScoreBoard.SETTING_USE_PBT.equals(item.getId()) && "true".equals(item.getValue())) {
+                set(ScoreBoard.SETTING_USE_LT, "true");
+            } else if (ScoreBoard.SETTING_USE_LT.equals(item.getId()) && "false".equals(item.getValue())) {
+                set(ScoreBoard.SETTING_USE_PBT, "false");
             }
         }
     }
 
     private void setDefaults() {
-        set("Overlay.Interactive.Clock", "On");
+        set("Overlay.Interactive.Clock", "true");
         set("Overlay.Interactive.Scaling", "100");
-        set("Overlay.Interactive.Score", "On");
-        set("Overlay.Interactive.ShowJammers", "On");
-        set("Overlay.Interactive.ShowLineups", "On");
-        set("Overlay.Interactive.ShowAllNames", "Off");
-        set("ScoreBoard.Operator_Default.StartStopButtons", "false");
+        set("Overlay.Interactive.Score", "true");
+        set("Overlay.Interactive.ShowJammers", "true");
+        set("Overlay.Interactive.ShowLineups", "true");
+        set("Overlay.Interactive.ShowNames", "true");
+        set("Overlay.Interactive.ShowPenaltyClocks", "true");
         set("ScoreBoard.Operator_Default.TabBar", "true");
         set("ScoreBoard.Operator_Default.ReplaceButton", "false");
         set("ScoreBoard.Operator_Default.ScoreAdjustments", "false");
         set(ScoreBoard.SETTING_USE_LT, "false");
+        set(ScoreBoard.SETTING_USE_PBT, "false");
         set(ScoreBoard.SETTING_STATSBOOK_INPUT, "");
         set(ScoreBoard.SETTING_AUTO_START, "");
         set(ScoreBoard.SETTING_AUTO_START_BUFFER, "0:02");
-        set(ScoreBoard.SETTING_AUTO_END_JAM, "true");
+        set(ScoreBoard.SETTING_AUTO_END_JAM, "false");
         set(ScoreBoard.SETTING_AUTO_END_TTO, "false");
-        set(ScoreBoard.SETTING_CLOCK_AFTER_TIMEOUT, Clock.ID_LINEUP);
         set(Clock.SETTING_SYNC, "true");
         set(Team.SETTING_DISPLAY_NAME, Team.OPTION_LEAGUE_NAME);
         set(Game.SETTING_DEFAULT_NAME_FORMAT, "%d %G %1 vs. %2 (%s: %S)");
@@ -64,7 +71,9 @@ public class SettingsImpl extends ScoreBoardEventProviderImpl<Settings> implemen
         setBothViews("CustomHtml", "/customhtml/fullscreen/example.html");
         setBothViews("Image", "/images/fullscreen/test-image.png");
         setBothViews("ImageScaling", "contain");
+        setBothViews("HideBanners", "false");
         setBothViews("HideLogos", "false");
+        setBothViews("HidePenaltyClocks", "false");
         setBothViews("SidePadding", "");
         setBothViews("SwapTeams", "false");
         setBothViews("Video", "/videos/fullscreen/test-video.webm");

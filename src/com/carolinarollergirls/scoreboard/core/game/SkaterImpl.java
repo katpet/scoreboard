@@ -16,6 +16,7 @@ import com.carolinarollergirls.scoreboard.core.interfaces.Penalty;
 import com.carolinarollergirls.scoreboard.core.interfaces.Position;
 import com.carolinarollergirls.scoreboard.core.interfaces.PreparedTeam.PreparedSkater;
 import com.carolinarollergirls.scoreboard.core.interfaces.Role;
+import com.carolinarollergirls.scoreboard.core.interfaces.ScoreBoard;
 import com.carolinarollergirls.scoreboard.core.interfaces.Skater;
 import com.carolinarollergirls.scoreboard.core.interfaces.Team;
 import com.carolinarollergirls.scoreboard.core.interfaces.TeamJam;
@@ -41,6 +42,17 @@ public class SkaterImpl extends ScoreBoardEventProviderImpl<Skater> implements S
         set(PREPARED_SKATER, ps);
         setFlags(ps.get(FLAGS));
     }
+    public SkaterImpl(Team t, Skater source) {
+        this(t, (String) null);
+        PreparedSkater ps = source.get(PREPARED_SKATER);
+        set(PREPARED_SKATER, ps);
+        if (ps == null || !team.get(Team.PREPARED_TEAM_CONNECTED)) {
+            set(NAME, source.get(NAME));
+            set(ROSTER_NUMBER, source.get(ROSTER_NUMBER));
+            set(PRONOUNS, source.get(PRONOUNS));
+        }
+        set(FLAGS, source.get(FLAGS));
+    }
 
     private void initialize() {
         addProperties(props);
@@ -56,6 +68,9 @@ public class SkaterImpl extends ScoreBoardEventProviderImpl<Skater> implements S
         setCopy(PENALTY_BOX, this, CURRENT_FIELDING, Fielding.PENALTY_BOX, false);
         setCopy(CURRENT_BOX_SYMBOLS, this, CURRENT_FIELDING, Fielding.BOX_TRIP_SYMBOLS, true);
         setRecalculated(CURRENT_PENALTIES).addSource(this, PENALTY).addSource(this, PENALTY_BOX);
+        setRecalculated(PENALTY_COUNT).addSource(this, PENALTY);
+        setRecalculated(HAS_UNSERVED).addSource(this, PENALTY).addSource(this, EXTRA_PENALTY_TIME);
+        setRecalculated(PENALTY_DETAILS).addSource(this, PENALTY).addSource(this, PENALTY_BOX);
     }
 
     @Override
@@ -74,17 +89,45 @@ public class SkaterImpl extends ScoreBoardEventProviderImpl<Skater> implements S
             return last;
         }
         if (prop == CURRENT_PENALTIES) {
-            List<Penalty> penalties =
-                new ArrayList<>(isPenaltyBox() ? getCurrentFielding().getCurrentBoxTrip().getAll(BoxTrip.PENALTY)
-                                               : getUnservedPenalties());
+            if (isPenaltyBox() && getCurrentFielding() != null && getCurrentFielding().getCurrentBoxTrip() != null) {
+                return getCurrentFielding().getCurrentBoxTrip().get(BoxTrip.PENALTY_CODES);
+            }
+            List<Penalty> penalties = getUnservedPenalties();
             Collections.sort(penalties);
             value = penalties.stream().map(Penalty::getCode).collect(Collectors.joining(" "));
         }
+        if (prop == PENALTY_DETAILS) {
+            if (isPenaltyBox() && getCurrentFielding() != null && getCurrentFielding().getCurrentBoxTrip() != null) {
+                return getCurrentFielding().getCurrentBoxTrip().get(BoxTrip.PENALTY_DETAILS);
+            }
+            List<Penalty> penalties = getUnservedPenalties();
+            Collections.sort(penalties);
+            value = penalties.stream().map(Penalty::getDetails).collect(Collectors.joining(","));
+        }
+        if (prop == PENALTY_COUNT) {
+            int count = 0;
+            for (Penalty p : getAll(PENALTY)) {
+                if (!FO_EXP_ID.equals(p.getProviderId())) { count++; }
+            }
+            return count;
+        }
+        if (prop == HAS_UNSERVED) {
+            if (get(EXTRA_PENALTY_TIME) > 0L) { return true; }
+            for (Penalty p : getAll(PENALTY)) {
+                if (!FO_EXP_ID.equals(p.getProviderId()) && !p.get(Penalty.SERVED)) { return true; }
+            }
+            return false;
+        }
+        if (prop == PENALTY_BOX && source == Source.WS &&
+            Boolean.parseBoolean(scoreBoard.getSettings().get(ScoreBoard.SETTING_USE_PBT))) {
+            return last;
+        }
+        if (prop == EXTRA_PENALTY_TIME) { return ((Long) value / 1000L) * 1000L; }
         return value;
     }
     @Override
     protected void valueChanged(Value<?> prop, Object value, Object last, Source source, Flag flag) {
-        if (prop == CURRENT_FIELDING) {
+        if (prop == CURRENT_FIELDING && !source.isFile()) {
             Fielding f = (Fielding) value;
             Fielding lf = (Fielding) last;
             setRole(value == null ? getBaseRole() : f.getCurrentRole());
@@ -149,7 +192,7 @@ public class SkaterImpl extends ScoreBoardEventProviderImpl<Skater> implements S
                 !getCurrentFielding().getTeamJam().getOtherTeam().isLead() && game.isInJam()) {
                 getTeam().set(Team.LOST, true);
             }
-            if (!p.isServed() && !game.isInJam()) {
+            if (!p.isServed() && !game.isInJam() && getRole(getTeam().getRunningOrUpcomingTeamJam()) == Role.BENCH) {
                 getTeam().field(this, getRole(getTeam().getRunningOrEndedTeamJam()),
                                 getTeam().getRunningOrUpcomingTeamJam());
             }
@@ -317,13 +360,17 @@ public class SkaterImpl extends ScoreBoardEventProviderImpl<Skater> implements S
     public List<Penalty> getUnservedPenalties() {
         List<Penalty> usp = new ArrayList<>();
         for (Penalty p : getAll(PENALTY)) {
-            if (!p.isServed()) { usp.add(p); }
+            if (!p.isServed() && !p.getProviderId().equals(FO_EXP_ID)) { usp.add(p); }
         }
         return usp;
     }
     @Override
     public boolean hasUnservedPenalties() {
-        return getUnservedPenalties().size() > 0;
+        return !getUnservedPenalties().isEmpty() || getExtraPenaltyTime() > 0L;
+    }
+    @Override
+    public long getExtraPenaltyTime() {
+        return get(EXTRA_PENALTY_TIME);
     }
 
     @Override

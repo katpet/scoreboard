@@ -14,9 +14,13 @@ public interface BoxTrip extends ScoreBoardEventProvider {
 
     public void end();
     public void unend();
+    public void startJam();
+    public void stopJam();
     public void restart();
 
     public Team getTeam();
+    public Game getGame();
+    public Clock getClock();
 
     public boolean isCurrent();
     public Fielding getCurrentFielding();
@@ -26,6 +30,9 @@ public interface BoxTrip extends ScoreBoardEventProvider {
     public Fielding getEndFielding();
     public boolean endedBetweenJams();
     public boolean endedAfterSP();
+
+    public Clock.ClockSnapshot snapshot();
+    public void restoreSnapshot(Clock.ClockSnapshot s);
     public int getPeriodNumber();
     public int getPenaltyCount();
     public void setPenaltyCount(int count);
@@ -48,11 +55,20 @@ public interface BoxTrip extends ScoreBoardEventProvider {
     public static final Value<Long> JAM_CLOCK_START = new Value<>(Long.class, "JamClockStart", 0L, props);
     public static final Value<Long> JAM_CLOCK_END = new Value<>(Long.class, "JamClockEnd", 0L, props);
     public static final Value<Long> DURATION = new Value<>(Long.class, "Duration", 0L, props);
+    public static final Value<Skater> CURRENT_SKATER = new Value<>(Skater.class, "CurrentSkater", null, props);
+    public static final Value<String> ROSTER_NUMBER = new Value<>(String.class, "RosterNumber", "", props);
+    public static final Value<String> PENALTY_CODES = new Value<>(String.class, "PenaltyCodes", "", props);
+    public static final Value<Integer> TOTAL_PENALTIES = new Value<>(Integer.class, "TotalPenalties", null, props);
+    public static final Value<Boolean> TIMING_STOPPED = new Value<>(Boolean.class, "TimingStopped", false, props);
+    public static final Value<Long> TIME = new Value<>(Long.class, "Time", null, props);
+    public static final Value<Integer> SHORTENED = new Value<>(Integer.class, "Shortened", 0, props);
+    public static final Value<String> PENALTY_DETAILS = new Value<>(String.class, "PenaltyDetails", "", props);
     public static final Value<Integer> PERIOD_NUMBER = new Value<>(Integer.class, "PeriodNumber", 1, props);
     public static final Value<Integer> PENALTY_COUNT = new Value<>(Integer.class, "PenaltyCount", 1, props);
 
     public static final Child<Fielding> FIELDING = new Child<>(Fielding.class, "Fielding", props);
     public static final Child<Penalty> PENALTY = new Child<>(Penalty.class, "Penalty", props);
+    public static final Child<Clock> CLOCK = new Child<>(Clock.class, "Clock", props);
 
     public static final Command START_EARLIER = new Command("StartEarlier", props);
     public static final Command START_LATER = new Command("StartLater", props);

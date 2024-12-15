@@ -1,5 +1,7 @@
 package com.carolinarollergirls.scoreboard.utils;
 
+import java.time.LocalDateTime;
+
 public abstract class Logger {
     protected static void setLogger(Logger log) { instance = log; }
 
@@ -14,7 +16,7 @@ public abstract class Logger {
     }
 
     public static void printStackTrace(Throwable e) {
-        instance.log(e.toString());
+        instance.log("At " + LocalDateTime.now().toString() + ": " + e.toString());
         for (StackTraceElement element : e.getStackTrace()) { instance.log("        at " + element.toString()); }
     }
 

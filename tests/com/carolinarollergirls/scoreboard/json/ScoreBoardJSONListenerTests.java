@@ -4,8 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.Map;
-import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -23,10 +21,10 @@ import com.carolinarollergirls.scoreboard.core.interfaces.Period;
 import com.carolinarollergirls.scoreboard.core.interfaces.Role;
 import com.carolinarollergirls.scoreboard.core.interfaces.Rulesets;
 import com.carolinarollergirls.scoreboard.core.interfaces.Rulesets.Ruleset;
-import com.carolinarollergirls.scoreboard.core.interfaces.ScoreBoard;
 import com.carolinarollergirls.scoreboard.core.interfaces.Skater;
 import com.carolinarollergirls.scoreboard.core.interfaces.Team;
 import com.carolinarollergirls.scoreboard.core.prepared.RulesetsImpl;
+import com.carolinarollergirls.scoreboard.json.JSONStateListener.StateTrie;
 import com.carolinarollergirls.scoreboard.rules.Rule;
 import com.carolinarollergirls.scoreboard.utils.BasePath;
 import com.carolinarollergirls.scoreboard.utils.ScoreBoardClock;
@@ -43,10 +41,10 @@ public class ScoreBoardJSONListenerTests {
     public TemporaryFolder dir = new TemporaryFolder();
     private File oldDir;
 
-    private Map<String, Object> state;
+    private StateTrie state;
     private JSONStateListener jsonListener = new JSONStateListener() {
         @Override
-        public void sendUpdates(Map<String, Object> s, Set<String> changed) {
+        public void sendUpdates(StateTrie s, StateTrie changed) {
             state = s;
         }
     };
@@ -63,14 +61,13 @@ public class ScoreBoardJSONListenerTests {
 
         ScoreBoardClock.getInstance().stop();
         GameImpl.setQuickClockThreshold(0L);
-        sb = new ScoreBoardImpl();
+        sb = new ScoreBoardImpl(false);
         sb.postAutosaveUpdate();
         g = sb.getCurrentGame().get(CurrentGame.GAME);
         gameId = g.getId();
-        sb.getSettings().set(ScoreBoard.SETTING_CLOCK_AFTER_TIMEOUT, Clock.ID_LINEUP);
         sb.getSettings().set(Clock.SETTING_SYNC, String.valueOf(false));
 
-        jsm = new JSONStateManager();
+        jsm = new JSONStateManager(false);
         jsm.register(jsonListener);
         new ScoreBoardJSONListener(sb, jsm);
         advance(0);
@@ -207,8 +204,8 @@ public class ScoreBoardJSONListenerTests {
                                      ").Team(1).Skater(00000000-0000-0000-0000-000000000001).RosterNumber"));
         assertEquals("", state.get("ScoreBoard.Game(" + gameId +
                                    ").Team(1).Skater(00000000-0000-0000-0000-000000000001).Flags"));
-        assertEquals("", state.get("ScoreBoard.Game(" + gameId +
-                                   ").Team(1).Skater(00000000-0000-0000-0000-000000000001).Position"));
+        assertEquals(null, state.get("ScoreBoard.Game(" + gameId +
+                                     ").Team(1).Skater(00000000-0000-0000-0000-000000000001).Position"));
         assertEquals("Bench", state.get("ScoreBoard.Game(" + gameId +
                                         ").Team(1).Skater(00000000-0000-0000-0000-000000000001).Role"));
         assertEquals(false, state.get("ScoreBoard.Game(" + gameId +
@@ -283,8 +280,9 @@ public class ScoreBoardJSONListenerTests {
         advance(0);
         assertEquals(null, state.get("ScoreBoard.Game(" + gameId +
                                      ").Team(1).Skater(00000000-0000-0000-0000-000000000001).Penalty(1).Id"));
-        assertEquals(null, state.get("ScoreBoard.Game(" + gameId +
-                                     ").Team(1).Skater(00000000-0000-0000-0000-000000000001).Penalty(1).PeriodNumber"));
+        assertEquals(null,
+                     state.get("ScoreBoard.Game(" + gameId +
+                               ").Team(1).Skater(00000000-0000-0000-0000-000000000001).Penalty(1).PeriodNumber"));
         assertEquals(null, state.get("ScoreBoard.Game(" + gameId +
                                      ").Team(1).Skater(00000000-0000-0000-0000-000000000001).Penalty(1).JamNumber"));
         assertEquals(null, state.get("ScoreBoard.Game(" + gameId +
@@ -303,8 +301,9 @@ public class ScoreBoardJSONListenerTests {
 
         s.remove(Skater.PENALTY, "0");
         advance(0);
-        assertEquals(null, state.get("ScoreBoard.Game(" + gameId +
-                                     ").Team(1).Skater(00000000-0000-0000-0000-000000000001).Penalty(0).PeriodNumber"));
+        assertEquals(null,
+                     state.get("ScoreBoard.Game(" + gameId +
+                               ").Team(1).Skater(00000000-0000-0000-0000-000000000001).Penalty(0).PeriodNumber"));
         assertEquals(null, state.get("ScoreBoard.Game(" + gameId +
                                      ").Team(1).Skater(00000000-0000-0000-0000-000000000001).Penalty(0).JamNumber"));
         assertEquals(null, state.get("ScoreBoard.Game(" + gameId +
@@ -334,7 +333,7 @@ public class ScoreBoardJSONListenerTests {
         assertEquals(false, state.get("ScoreBoard.Game(" + gameId +
                                       ").Period(1).Jam(1).TeamJam(1).Fielding(Jammer).PenaltyBox"));
         assertEquals(gameId + "_1_Jammer", state.get("ScoreBoard.Game(" + gameId +
-                                                     ").Period(1).Jam(1).TeamJam(1).Fielding(Jammer).Position"));
+                                                       ").Period(1).Jam(1).TeamJam(1).Fielding(Jammer).Position"));
 
         t.field(s, Role.BENCH);
         advance(0);
@@ -343,7 +342,7 @@ public class ScoreBoardJSONListenerTests {
         assertEquals(false, state.get("ScoreBoard.Game(" + gameId +
                                       ").Period(1).Jam(1).TeamJam(1).Fielding(Jammer).PenaltyBox"));
         assertEquals(gameId + "_1_Jammer", state.get("ScoreBoard.Game(" + gameId +
-                                                     ").Period(1).Jam(1).TeamJam(1).Fielding(Jammer).Position"));
+                                                       ").Period(1).Jam(1).TeamJam(1).Fielding(Jammer).Position"));
 
         t.field(s, Role.JAMMER);
         advance(0);
@@ -356,7 +355,7 @@ public class ScoreBoardJSONListenerTests {
         assertEquals(false, state.get("ScoreBoard.Game(" + gameId +
                                       ").Period(1).Jam(1).TeamJam(1).Fielding(Jammer).PenaltyBox"));
         assertEquals(gameId + "_1_Jammer", state.get("ScoreBoard.Game(" + gameId +
-                                                     ").Period(1).Jam(1).TeamJam(1).Fielding(Jammer).Position"));
+                                                       ").Period(1).Jam(1).TeamJam(1).Fielding(Jammer).Position"));
 
         g.stopJamTO();
         advance(1000);
@@ -439,8 +438,8 @@ public class ScoreBoardJSONListenerTests {
 
     @Test
     public void testMediaEvents() throws Exception {
-        assertEquals("", state.get("ScoreBoard.Media.Format(images).Type(fullscreen)"));
-        assertEquals("", state.get("ScoreBoard.Media.Format(images).Type(teamlogo)"));
+        assertEquals(null, state.get("ScoreBoard.Media.Format(images).Type(fullscreen)"));
+        assertEquals(null, state.get("ScoreBoard.Media.Format(images).Type(teamlogo)"));
         assertEquals("init.png", state.get("ScoreBoard.Media.Format(images).Type(teamlogo).File(init.png).Id"));
         assertEquals("init", state.get("ScoreBoard.Media.Format(images).Type(teamlogo).File(init.png).Name"));
         assertEquals("/images/teamlogo/init.png",
@@ -453,7 +452,7 @@ public class ScoreBoardJSONListenerTests {
         assertEquals(null, state.get("ScoreBoard.Media.Format(images).Type(teamlogo.File(init.png).Id"));
         assertEquals(null, state.get("ScoreBoard.Media.Format(images).Type(teamlogo.File(init.png).Name"));
         assertEquals(null, state.get("ScoreBoard.Media.Format(images).Type(teamlogo.File(init.png).Src"));
-        assertEquals("", state.get("ScoreBoard.Media.Format(images).Type(teamlogo)"));
+        assertEquals(null, state.get("ScoreBoard.Media.Format(images).Type(teamlogo)"));
         assertEquals("new.png", state.get("ScoreBoard.Media.Format(images).Type(fullscreen).File(new.png).Id"));
         assertEquals("new", state.get("ScoreBoard.Media.Format(images).Type(fullscreen).File(new.png).Name"));
         assertEquals("/images/fullscreen/new.png",

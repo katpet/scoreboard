@@ -91,6 +91,9 @@ public class MirrorScoreBoardEventProviderImpl<M extends ScoreBoardEventProvider
             MirrorScoreBoardEventProviderImpl<?, ?> paren =
                 (MirrorScoreBoardEventProviderImpl<?, ?>) toMirror(source.getParent());
             mirror = mirrorFactory.createMirror(paren, source);
+        } else if (mirror.getParent() instanceof MirrorScoreBoardEventProvider &&
+                   mirror.getParent() != toMirror(source.getParent())) {
+            ((MirrorScoreBoardEventProviderImpl<?, ?>) mirror).parent = toMirror(source.getParent());
         }
         return mirror;
     }
@@ -186,9 +189,10 @@ public class MirrorScoreBoardEventProviderImpl<M extends ScoreBoardEventProvider
     public static void addClassMapping(Class<? extends ScoreBoardEventProvider> source,
                                        Class<? extends MirrorScoreBoardEventProvider<?>> mirror) {
         classMap.put(source, mirror);
+        if (elements.get(mirror) == null) { elements.put(mirror, new HashMap<>()); }
     }
 
-    protected static Map<Class<? extends ScoreBoardEventProvider>, Class<? extends MirrorScoreBoardEventProvider<?>>>
+    private static Map<Class<? extends ScoreBoardEventProvider>, Class<? extends MirrorScoreBoardEventProvider<?>>>
         classMap = new HashMap<>();
     protected static MirrorFactory mirrorFactory;
 }

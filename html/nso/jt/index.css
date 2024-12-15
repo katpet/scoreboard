@@ -1,50 +1,87 @@
-/* ClockBubbles */
-span.ClockBubble { border-radius: 5px; font-weight: bold; background: rgba(255, 0, 0, 0.5); } 
-span.ClockBubble.Running { background: rgba(0, 255, 0, 0.5); } 
-/* END ClockBubbles */
+:root { --button-margin: 1dvh; --button-margin: min(2 * var(--segment-corner-radius), 1dvh); }
+body { margin: 0; padding: 0; width: 100dvw; height: 100dvh; }
+div { position: absolute; margin: 0; top: 0; left: 0; height: inherit; width: inherit; text-align: center; border-radius: var(--segment-corner-radius); }
+button.AutoFit { position: absolute; margin: var(--button-margin); top: 0; left: 0; height: calc(100% - 2 * var(--button-margin)); width: calc(100% - 2 *  var(--button-margin)); }
+button.AutoFit.Big { margin: var(--segment-corner-radius); height: calc(100% - 2 * var(--segment-corner-radius)); width: calc(100% - 2 *  var(--segment-corner-radius)); }
+.Group { background: var(--group-bg); color: var(--group-fg); }
 
-/* Alternate Names */
-.Name.HasAlternateName { display: none; } 
-.AlternateName:not(.HasAlternateName) { display: none; } 
-/* END Alternate Names */
+.Clocks [Clock]:not(.Running) { display: none; }
+.Clocks [Clock].Running ~ [Clock].Running { display: none; }
+.Clocks .ClockName { font-weight: bold; }
+.Clocks .Running, .Clocks [Clock="Jam"].InJam { background: var(--element-active-bg); color: var(--element-active-fg); } 
+.Clocks .Running.NoMoreJam { background: var(--element-inbox-bg); color: var(--element-inbox-fg); } 
+.Clocks .Time>button { padding: 0 0.4em; margin: 0.3em 0; vertical-align: unset; }
 
+.TimeoutType .Count { font-weight: bold; }
+.TimeoutType .TeamName { font-weight: bold; }
 
-/* JamControlPage */
-#JamControlPage div { text-align: center; } 
-#JamControlPage p.Clocks { text-align: center; } 
-#JamControlPage p.Clocks>span { padding: 0.5em 0.5em; margin: auto 0.5em; } 
-#JamControlPage div.Period div.PeriodNumber { width: 35%; } 
-#JamControlPage div.Period div.PeriodTime { width: 65%; } 
-#JamControlPage div.Period div.Title { font-size: 150%; } 
-#JamControlPage div.Period div.Number { font-size: 200% } 
-#JamControlPage div.Period div.PeriodTime { font-size: 500%; } 
-#JamControlPage div.Time a.Time { font-size: 150%; } 
-#JamControlPage span.Label { min-height: 1.4em; } 
-/* END JamControlPage */
+.Settings { background-color: var(--nodistract-bg); color: var(--nodistract-fg); }
 
-/* PeriodTimePage */
-#PeriodTimePage p { text-align: center; } 
-#PeriodTimePage a.Time { font-size: 150%; } 
-/* END PeriodTimePage */
+/* 
+ * Positioning 
+ */
+ @media (min-aspect-ratio: 1/1) {
+    .Clocks { height: 24.5dvh; }
+    .Clocks>.Period { width: 49.5dvw; }
+    .Clocks>.Jam { left: 50.5dvw; width: 49.5dvw; }
+    .ClockName { height: 50%; }
+    .Time { top: 50%; height: 50%; }
 
-/* TeamScorePage */
-#TeamSetScorePage div { text-align: center; } 
-#TeamBothScorePage div { text-align: center; } 
-#Team1ScorePage div { text-align: center; } 
-#Team2ScorePage div { text-align: center; } 
+    .TimeoutType { top: 25dvh; height: 24.5dvh; }
+    [Team] { width: 43.5dvw; }
+    [Team="2"] { left: 56.5dvw; }
+    .TeamName { height: 8.5dvh; }
+    .ToButtonRow { height: 8dvh; width: 21.5dvw; }
+    .TTO, .OR { top: 8.5dvh; }
+    .Retained { top: 16.5dvh; }
+    [Team="1"] .TTO, [Team="2"] .OR, [Team="2"] .Retained { left: 22dvw; }
+    .OTO { left: 44dvw; width: 12dvw; }
+    .ToButtonRow>.Button { width: 80%; }
+    .ToButtonRow>.Count { left: 80%; width: 20%; }
+    [Team="2"] .Button { left: 20%; }
+    [Team="2"] .Count { left: 0; }
 
-#TeamBothScorePage div.HV.Horizontal:not(.IsHorizontal) { display: none; } 
-#TeamBothScorePage div.HV.Vertical:not(.IsVertical) { display: none; } 
-
-@media (orientation:portrait) {#TeamBothScorePage div.Orientation:not(.Portrait) { display: none; } 
+    .MainButtons { top: 50dvh; height: 50dvh; }
+    .ReplaceInfo, .Settings { height: 15dvh; }
+    .Settings>div { width: calc(100% / 3); }
+    .Settings>.ToggleUndo { left: calc(100% / 3); }
+    .Settings>.Replace { left: calc(2 * 100% / 3); }
+    .Undo, .Start, .Stop, .Timeout { top: 15dvh; height: 35dvh; }
+    .Undo { left: 30dvw; width: 20dvw; }
+    .Start { left: 50dvw; width: 20dvw; }
+    .sbHide + .Start { left: 30dvw; width: 40dvw; }
+    .Stop, .Timeout { width: 30dvw; }
+    .Timeout { left: 70dvw; }
  }
-@media (orientation:landscape) {#TeamBothScorePage div.Orientation:not(.Landscape) { display: none; } 
- }
-/* END TeamScorePage */
 
-/* PenaltyPage */
-.TimeHeader { text-align: center; font-size: 150%; } 
-#JamTime,#PeriodTime { text-align: center; font-size: 300%; } 
-.PenaltyTime { font-size: 300%; } 
-#Jammer1Time,#Blocker1Team1Time,#Blocker2Team1Time,#Blocker3Team1Time { margin-left: .5em; } 
-#Jammer2Time,#Blocker1Team2Time,#Blocker2Team2Time,#Blocker3Team2Time { float: right; margin-right: .5em; } 
+@media (max-aspect-ratio: 1/1) {
+    .Clocks { height: 12.5dvh; }
+    .Clocks>.Period { height: 6dvh; }
+    .Clocks>.Jam { top: 6.5dvh; height: 6dvh; }
+    .ClockName { width: 50dvw; }
+    .Time { left: 50dvw; width: 50dvw; }
+
+    .TimeoutType { top: 13dvh; height: 30.5dvh; }
+    [Team] { width: 49.5dvw; height: 24dvh; }
+    [Team="2"] { left: 50.5dvw; }
+    .ToButtonRow, .TeamName { height: 6dvh; }
+    .TTO { top: 6dvh; }
+    .OR { top: 12dvh; }
+    .Retained { top: 18dvh; }
+    .OTO { top: 24.5dvh; height: 6dvh; }
+    .ToButtonRow>.Button { width: 80%; }
+    .ToButtonRow>.Count { left: 80%; width: 20%; }
+    [Team="2"] .Button { left: 20%; }
+    [Team="2"] .Count { left: 0; }
+
+    .MainButtons { top: 44dvh; height: 56dvh; }
+    .ReplaceInfo, .Settings { height: 6dvh; }
+    .Settings>div { width: calc(100% / 3); }
+    .Settings>.ToggleUndo { left: calc(100% / 3); }
+    .Settings>.Replace { left: calc(2 * 100% / 3); }
+    .Undo { top: 6dvh; height: 12.5dvh; }
+    .Start { top: 18.5dvh; height: 12.5dvh; }
+    .sbHide + .Start { top: 6dvh; height: 25dvh; }
+    .Stop, .Timeout { top: 31dvh; height: 25dvh; width: 50dvw; }
+    .Timeout { left: 50dvw; }
+}

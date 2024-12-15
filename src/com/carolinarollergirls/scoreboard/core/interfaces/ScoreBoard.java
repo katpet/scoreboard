@@ -32,13 +32,14 @@ public interface ScoreBoard extends ScoreBoardEventProvider {
     public CurrentGame getCurrentGame();
 
     public JSONStateManager getJsm();
+    public boolean useMetrics();
 
     public boolean isInitialLoadDone();
 
     public static Collection<Property<?>> props = new ArrayList<>();
 
     public static final Value<String> BLANK_STATSBOOK_FOUND =
-        new Value<>(String.class, "BlankStatsbookFound", "false", props);
+        new Value<>(String.class, "BlankStatsbookFound", "none", props);
     public static final Value<Integer> IMPORTS_IN_PROGRESS = new Value<>(Integer.class, "ImportsInProgress", 0, props);
 
     public static final Child<ValWithId> VERSION = new Child<>(ValWithId.class, "Version", props);
@@ -48,9 +49,10 @@ public interface ScoreBoard extends ScoreBoardEventProvider {
     public static final Child<Rulesets> RULESETS = new Child<>(Rulesets.class, "Rulesets", props);
     public static final Child<Game> GAME = new Child<>(Game.class, "Game", props);
     public static final Child<PreparedTeam> PREPARED_TEAM = new Child<>(PreparedTeam.class, "PreparedTeam", props);
+    public static final Child<PreparedOfficial> PREPARED_OFFICIAL =
+        new Child<>(PreparedOfficial.class, "PreparedOfficial", props);
     public static final Child<CurrentGame> CURRENT_GAME = new Child<>(CurrentGame.class, "CurrentGame", props);
 
-    public static final String SETTING_CLOCK_AFTER_TIMEOUT = "ScoreBoard.ClockAfterTimeout";
     public static final String SETTING_AUTO_START = "ScoreBoard.AutoStart";
     public static final String SETTING_AUTO_START_BUFFER = "ScoreBoard.AutoStartBuffer";
     public static final String SETTING_AUTO_END_JAM = "ScoreBoard.AutoEndJam";

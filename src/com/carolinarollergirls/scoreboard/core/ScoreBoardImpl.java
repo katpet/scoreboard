@@ -17,6 +17,7 @@ import com.carolinarollergirls.scoreboard.core.interfaces.ScoreBoard;
 import com.carolinarollergirls.scoreboard.core.interfaces.Settings;
 import com.carolinarollergirls.scoreboard.core.interfaces.Timeout;
 import com.carolinarollergirls.scoreboard.core.interfaces.TimeoutOwner;
+import com.carolinarollergirls.scoreboard.core.prepared.PreparedOfficialImpl;
 import com.carolinarollergirls.scoreboard.core.prepared.PreparedTeamImpl;
 import com.carolinarollergirls.scoreboard.core.prepared.RulesetsImpl;
 import com.carolinarollergirls.scoreboard.event.Child;
@@ -29,8 +30,10 @@ import com.carolinarollergirls.scoreboard.utils.ValWithId;
 import com.carolinarollergirls.scoreboard.utils.Version;
 
 public class ScoreBoardImpl extends ScoreBoardEventProviderImpl<ScoreBoard> implements ScoreBoard {
-    public ScoreBoardImpl() {
+    public ScoreBoardImpl(boolean useMetrics) {
         super(null, "", null);
+        this.useMetrics = useMetrics;
+        jsm = new JSONStateManager(useMetrics);
         addProperties(props);
         setupScoreBoard();
     }
@@ -64,6 +67,7 @@ public class ScoreBoardImpl extends ScoreBoardEventProviderImpl<ScoreBoard> impl
     public ScoreBoardEventProvider create(Child<? extends ScoreBoardEventProvider> prop, String id, Source source) {
         synchronized (coreLock) {
             if (prop == PREPARED_TEAM) { return new PreparedTeamImpl(this, id); }
+            if (prop == PREPARED_OFFICIAL) { return new PreparedOfficialImpl(this, id); }
             if (prop == GAME) { return new GameImpl(this, id); }
             return null;
         }
@@ -135,10 +139,16 @@ public class ScoreBoardImpl extends ScoreBoardEventProviderImpl<ScoreBoard> impl
     }
 
     @Override
+    public boolean useMetrics() {
+        return useMetrics;
+    }
+
+    @Override
     public boolean isInitialLoadDone() {
         return initialLoadDone;
     }
 
-    private JSONStateManager jsm = new JSONStateManager();
+    private JSONStateManager jsm;
+    private boolean useMetrics;
     private boolean initialLoadDone = false;
 }

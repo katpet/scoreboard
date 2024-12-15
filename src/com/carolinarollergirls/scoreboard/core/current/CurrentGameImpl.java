@@ -137,24 +137,25 @@ public class CurrentGameImpl extends MirrorScoreBoardEventProviderImpl<Game, Cur
 
     @Override
     protected void fillMaps() {
-        classMap.put(Game.class, CurrentGame.class);
-        classMap.put(Clock.class, CurrentClock.class);
-        classMap.put(Team.class, CurrentTeam.class);
-        classMap.put(Skater.class, CurrentSkater.class);
-        classMap.put(Penalty.class, CurrentPenalty.class);
-        classMap.put(Position.class, CurrentPosition.class);
-        classMap.put(BoxTrip.class, CurrentBoxTrip.class);
-        classMap.put(BoxSeat.class, CurrentBoxSeat.class);
-        classMap.put(Period.class, CurrentPeriod.class);
-        classMap.put(Jam.class, CurrentJam.class);
-        classMap.put(TeamJam.class, CurrentTeamJam.class);
-        classMap.put(Fielding.class, CurrentFielding.class);
-        classMap.put(ScoringTrip.class, CurrentScoringTrip.class);
-        classMap.put(Timeout.class, CurrentTimeout.class);
-        classMap.put(Official.class, CurrentOfficial.class);
-        classMap.put(Expulsion.class, CurrentExpulsion.class);
+        addClassMapping(Game.class, CurrentGame.class);
+        addClassMapping(Clock.class, CurrentClock.class);
+        addClassMapping(Team.class, CurrentTeam.class);
+        addClassMapping(Skater.class, CurrentSkater.class);
+        addClassMapping(Penalty.class, CurrentPenalty.class);
+        addClassMapping(Position.class, CurrentPosition.class);
+        addClassMapping(BoxTrip.class, CurrentBoxTrip.class);
+        addClassMapping(BoxSeat.class, CurrentBoxSeat.class);
+        addClassMapping(Period.class, CurrentPeriod.class);
+        addClassMapping(Jam.class, CurrentJam.class);
+        addClassMapping(TeamJam.class, CurrentTeamJam.class);
+        addClassMapping(Fielding.class, CurrentFielding.class);
+        addClassMapping(ScoringTrip.class, CurrentScoringTrip.class);
+        addClassMapping(Timeout.class, CurrentTimeout.class);
+        addClassMapping(Official.class, CurrentOfficial.class);
+        addClassMapping(Expulsion.class, CurrentExpulsion.class);
 
-        addPropertyMapping(Game.CLOCK, Game.BOX_CLOCK, Game.TEAM, Game.PERIOD, Period.JAM, Game.REF, Game.NSO, Game.EXPULSION);
+        addPropertyMapping(Game.CLOCK, Game.BOX_CLOCK, Game.TEAM, Game.PERIOD, Period.JAM, Team.BOX_TRIP, Game.REF, Game.NSO,
+                           Game.EXPULSION);
     }
 
     @Override
@@ -210,6 +211,10 @@ public class CurrentGameImpl extends MirrorScoreBoardEventProviderImpl<Game, Cur
     public static class CurrentBoxTripImpl
         extends MirrorScoreBoardEventProviderImpl<BoxTrip, CurrentBoxTrip> implements CurrentBoxTrip {
         CurrentBoxTripImpl(ScoreBoardEventProvider parent, BoxTrip sourceElement) { super(parent, sourceElement); }
+        @Override
+        protected void fillMaps() {
+            addPropertyMapping(BoxTrip.CLOCK);
+        }
     }
     public static class CurrentBoxSeatImpl
         extends MirrorScoreBoardEventProviderImpl<BoxSeat, CurrentBoxSeat> implements CurrentBoxSeat {

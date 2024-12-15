@@ -15,17 +15,21 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.jr.ob.JSON;
 
+import com.carolinarollergirls.scoreboard.core.interfaces.BoxTrip;
 import com.carolinarollergirls.scoreboard.core.interfaces.BoxSeat;
 import com.carolinarollergirls.scoreboard.core.interfaces.Clock;
 import com.carolinarollergirls.scoreboard.core.interfaces.CurrentGame;
 import com.carolinarollergirls.scoreboard.core.interfaces.Expulsion;
+import com.carolinarollergirls.scoreboard.core.interfaces.FloorPosition;
 import com.carolinarollergirls.scoreboard.core.interfaces.Game;
 import com.carolinarollergirls.scoreboard.core.interfaces.Jam;
 import com.carolinarollergirls.scoreboard.core.interfaces.Media.MediaFile;
 import com.carolinarollergirls.scoreboard.core.interfaces.Media.MediaType;
+import com.carolinarollergirls.scoreboard.core.interfaces.Official;
 import com.carolinarollergirls.scoreboard.core.interfaces.Penalty;
 import com.carolinarollergirls.scoreboard.core.interfaces.Period;
 import com.carolinarollergirls.scoreboard.core.interfaces.Period.PeriodSnapshot;
+import com.carolinarollergirls.scoreboard.core.interfaces.Position;
 import com.carolinarollergirls.scoreboard.core.interfaces.PreparedTeam;
 import com.carolinarollergirls.scoreboard.core.interfaces.Rulesets;
 import com.carolinarollergirls.scoreboard.core.interfaces.Rulesets.Ruleset;
@@ -56,20 +60,34 @@ import com.carolinarollergirls.scoreboard.utils.ValWithId;
 public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game {
     public GameImpl(ScoreBoard sb, PreparedTeam team1, PreparedTeam team2, Ruleset rs) {
         super(sb, UUID.randomUUID().toString(), ScoreBoard.GAME);
-        initReferences(rs);
+        initReferences(rs, null);
         getTeam(Team.ID_1).loadPreparedTeam(team1);
         getTeam(Team.ID_2).loadPreparedTeam(team2);
-        jsonSnapshotter = new JSONStateSnapshotter(sb.getJsm(), this);
+        jsonSnapshotter = new JSONStateSnapshotter(sb.getJsm(), this, sb.useMetrics());
     }
     public GameImpl(ScoreBoard parent, String id) {
         super(parent, id, ScoreBoard.GAME);
-        initReferences(scoreBoard.getRulesets().getRuleset(Rulesets.ROOT_ID));
-        jsonSnapshotter = new JSONStateSnapshotter(getScoreBoard().getJsm(), this);
+        initReferences(scoreBoard.getRulesets().getRuleset(Rulesets.ROOT_ID), null);
+        jsonSnapshotter = new JSONStateSnapshotter(getScoreBoard().getJsm(), this, parent.useMetrics());
+    }
+    public GameImpl(Game source) {
+        super(source.getScoreBoard(), UUID.randomUUID().toString(), ScoreBoard.GAME);
+        initReferences(source.getRuleset(), source);
+        set(NAME_FORMAT, source.get(NAME_FORMAT));
+        for (ValWithId ei : source.getAll(EVENT_INFO)) { add(EVENT_INFO, ei); }
+        for (Official nso : source.getAll(NSO)) { add(NSO, new OfficialImpl(this, nso)); }
+        for (Official so : source.getAll(REF)) { add(REF, new OfficialImpl(this, so)); }
+        Official hnso = source.get(HEAD_NSO);
+        if (hnso != null) {
+            String hnsoName = hnso.get(Official.NAME);
+            for (Official nso : getAll(NSO)) {
+                if (nso.get(Official.NAME) == hnsoName) { set(HEAD_NSO, nso); }
+            }
+        }
     }
 
-    private void initReferences(Ruleset rs) {
+    private void initReferences(Ruleset rs, Game source) {
         addProperties(props);
-        addProperties(Period.JAM);
 
         setCopy(CURRENT_PERIOD_NUMBER, this, CURRENT_PERIOD, Period.NUMBER, true);
         setCopy(IN_PERIOD, this, CURRENT_PERIOD, Period.RUNNING, false);
@@ -80,8 +98,11 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         setCopy(OFFICIAL_REVIEW, this, CURRENT_TIMEOUT, Timeout.REVIEW, false);
         setCopy(RULESET_NAME, this, RULESET, Ruleset.NAME, true);
         setRuleset(rs);
-        add(TEAM, new TeamImpl(this, Team.ID_1));
-        add(TEAM, new TeamImpl(this, Team.ID_2));
+        if (rs == null) {
+            for (Rule r : Rule.values()) { set(r, source.get(r)); }
+        }
+        add(TEAM, source != null ? new TeamImpl(this, source.getTeam(Team.ID_1)) : new TeamImpl(this, Team.ID_1));
+        add(TEAM, source != null ? new TeamImpl(this, source.getTeam(Team.ID_2)) : new TeamImpl(this, Team.ID_2));
         addWriteProtection(TEAM);
         add(CLOCK, new ClockImpl(this, Clock.ID_PERIOD));
         add(CLOCK, new ClockImpl(this, Clock.ID_JAM));
@@ -130,7 +151,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         noTimeoutDummy = new TimeoutImpl(getCurrentPeriod(), "noTimeout");
         getCurrentPeriod().add(Period.TIMEOUT, noTimeoutDummy);
         set(CURRENT_TIMEOUT, noTimeoutDummy);
-        set(UPCOMING_JAM, new JamImpl(this, getCurrentPeriod().getCurrentJam()));
+        setRecalculated(UPCOMING_JAM).addIndirectSource(this, CURRENT_PERIOD, Period.CURRENT_JAM);
         updateTeamJams();
 
         setInPeriod(false);
@@ -166,6 +187,20 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
                                                         }
                                                     }
                                                 }));
+
+        // handle intermission restart
+        addScoreBoardListener(new ConditionalScoreBoardListener<>(
+            Clock.class, getClock(Clock.ID_INTERMISSION).getId(), Clock.RUNNING, Boolean.TRUE,
+            new ScoreBoardListener() {
+                @Override
+                public void scoreBoardChange(ScoreBoardEvent<?> event) {
+                    if (getClock(Clock.ID_PERIOD).isTimeAtStart() && getCurrentPeriod().numberOf(Period.JAM) == 0 &&
+                        getCurrentPeriodNumber() > 0) {
+                        // intermission clock has bee restarted before period start - undo period advancement
+                        set(CURRENT_PERIOD, getCurrentPeriod().getPrevious());
+                    }
+                }
+            }));
 
         // handle auto-start (if enabled)
         addScoreBoardListener(new ConditionalScoreBoardListener<>(
@@ -261,8 +296,12 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
 
     @Override
     protected Object computeValue(Value<?> prop, Object value, Object last, Source source, Flag flag) {
-        if (prop == UPCOMING_JAM && !(value instanceof Jam)) {
-            if (getCurrentPeriod() != null) { value = new JamImpl(this, getCurrentPeriod().getCurrentJam()); }
+        if (prop == UPCOMING_JAM && !source.isFile()) {
+            Jam j = getCurrentPeriod().getCurrentJam().getNext();
+            if (j == null) { j = new JamImpl(this, getCurrentPeriod().getCurrentJam()); }
+            j.setParent(this);
+            while (j.hasNext()) { j.getNext().delete(); }
+            return j;
         } else if (prop == NO_MORE_JAM) {
             if (isInJam() || !isInPeriod()) { return false; }
             if (!getBoolean(Rule.PERIOD_END_BETWEEN_JAMS)) { return false; }
@@ -342,7 +381,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
                 !getTeam(Team.ID_2).getAll(Team.SCORE_ADJUSTMENT).isEmpty()) {
                 return "unapplied score adjustments";
             } else {
-                return "";
+                return exportFailureText;
             }
         }
         return value;
@@ -363,10 +402,15 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         } else if (prop == UPCOMING_JAM) {
             removeAll(Period.JAM);
             add(Period.JAM, (Jam) value);
+            updateTeamJams();
         } else if (prop == CURRENT_TIMEOUT && value == null) {
             return;
         }
         if (prop == CURRENT_PERIOD) {
+            Period p = (Period) value;
+            if (p.getCurrentJam().getNext() != getUpcomingJam()) { set(UPCOMING_JAM, p.getCurrentJam().getNext()); }
+            while (p.hasNext()) { p.getNext().delete(); }
+            updateTeamJams();
             for (Team t : getAll(TEAM)) { t.recountTimeouts(); }
         }
         if (prop == STATE && (State) value == State.RUNNING && (State) last == State.PREPARED) {
@@ -394,7 +438,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
                 // Game ended prematurely. Go to intermission, so "Final Score" is displayed.
                 // Don't change period number or time. That info may have to be reported to the
                 // governing body.
-                if (isInJam()) { _endJam(); }
+                if (isInJam()) { _endJam(false); }
                 if (tc.isRunning()) {
                     tc.stop();
                     getCurrentTimeout().stop();
@@ -405,6 +449,16 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
             }
             jsonSnapshotter.writeOnNextUpdate();
         }
+    }
+
+    @Override
+    protected <T extends ValueWithId> boolean mayAdd(Child<T> prop, T item, Source source) {
+        if (prop == RULE && getRuleset() != null && source == Source.WS) {
+            getRuleset().add(Ruleset.RULE, (ValWithId) item);
+            return false;
+        }
+        if (prop == Period.JAM && item != getUpcomingJam() && !source.isFile()) { return false; }
+        return true;
     }
 
     @Override
@@ -441,6 +495,10 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
     @Override
     protected void itemRemoved(Child<?> prop, ValueWithId item, Source source) {
         if (prop == EXPULSION) { ((Expulsion) item).delete(); }
+        if (prop == PERIOD && item == getCurrentPeriod() && source != Source.RENUMBER) {
+            set(CURRENT_PERIOD, getLast(PERIOD));
+            if (!getClock(Clock.ID_INTERMISSION).isRunning()) { _preparePeriod(); }
+        }
     }
 
     @Override
@@ -465,6 +523,12 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
                 set(UPDATE_IN_PROGRESS, true);
                 statsbookExporter = new StatsbookExporter(this);
             }
+        } else if (prop == START_BOX_TRIP) {
+            add(Team.BOX_TRIP, new BoxTripImpl(this));
+        } else if (prop == START_JAMMER_BOX_TRIP) {
+            jammerBoxEntry();
+        } else if (prop == COPY) {
+            parent.add(ownType, new GameImpl(this));
         }
     }
 
@@ -474,11 +538,21 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
             if (prop == CLOCK) { return new ClockImpl(this, id); }
             if (prop == BOX_CLOCK) { return new ClockImpl(this, id, Game.BOX_CLOCK); }
             if (prop == TEAM) { return new TeamImpl(this, id); }
-            if (prop == Period.JAM) { return new JamImpl(this, Integer.parseInt(id)); }
+            if (prop == Period.JAM) {
+                int num = Integer.parseInt(id);
+                if (source.isFile()) {
+                    getUpcomingJam().set(Jam.NUMBER, num, Source.RENUMBER, Flag.SPECIAL_CASE);
+                    return getUpcomingJam();
+                } else if (num == getCurrentPeriod().getCurrentJamNumber()) {
+                    // could be a race around jam start
+                    return getCurrentPeriod().getCurrentJam();
+                }
+            }
             if (prop == PERIOD) {
                 int num = Integer.parseInt(id);
                 if (0 <= num && num <= getInt(Rule.NUMBER_PERIODS)) { return new PeriodImpl(this, num); }
             }
+            if (prop == Team.BOX_TRIP) { return new BoxTripImpl(this, id); }
             if (prop == NSO) { return new OfficialImpl(this, id, NSO); }
             if (prop == REF) { return new OfficialImpl(this, id, REF); }
             if (prop == EXPULSION && source.isFile()) {
@@ -530,13 +604,6 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
     public Jam getUpcomingJam() {
         return get(UPCOMING_JAM);
     }
-    protected void advanceUpcomingJam() {
-        Jam upcoming = getUpcomingJam();
-        Jam next = new JamImpl(this, upcoming);
-        set(UPCOMING_JAM, next);
-        upcoming.setParent(getCurrentPeriod());
-        getCurrentPeriod().add(Period.JAM, upcoming);
-    }
 
     @Override
     public void updateTeamJams() {
@@ -564,7 +631,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
 
             createSnapshot(ACTION_OVERTIME);
 
-            _endTimeout(false, true);
+            _endTimeout(false);
             setInOvertime(true);
             setLabels(ACTION_START_JAM, ACTION_NONE, ACTION_TIMEOUT);
             long otLineupTime = getLong(Rule.OVERTIME_LINEUP_DURATION);
@@ -608,19 +675,23 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
     public void stopJamTO() {
         synchronized (coreLock) {
             Clock lc = getClock(Clock.ID_LINEUP);
-            Clock tc = getClock(Clock.ID_TIMEOUT);
-            if (!lc.isRunning() && !isOfficialScore() && !quickClockControl(Button.STOP)) {
+            if ((getCurrentTimeout().isRunning() || !lc.isRunning()) && !isOfficialScore() &&
+                !quickClockControl(Button.STOP)) {
                 autostartRan = false;
 
                 if (isInJam()) {
                     createSnapshot(ACTION_STOP_JAM);
-                    setLabels(ACTION_START_JAM, ACTION_NONE, ACTION_TIMEOUT);
-                    _endJam();
+                    if (getCurrentTimeout().isRunning()) {
+                        setLabels(ACTION_START_JAM, ACTION_STOP_TO, ACTION_RE_TIMEOUT);
+                    } else {
+                        setLabels(ACTION_START_JAM, ACTION_NONE, ACTION_TIMEOUT);
+                    }
+                    _endJam(false);
                     finishReplace();
-                } else if (tc.isRunning()) {
+                } else if (getCurrentTimeout().isRunning()) {
                     createSnapshot(ACTION_STOP_TO);
                     setLabels(ACTION_START_JAM, ACTION_NONE, ACTION_TIMEOUT);
-                    _endTimeout(false, false);
+                    _endTimeout(false);
                     finishReplace();
                 } else if (!lc.isRunning()) {
                     createSnapshot(ACTION_LINEUP);
@@ -641,7 +712,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
                 } else {
                     createSnapshot(ACTION_TIMEOUT);
                 }
-                setLabels(ACTION_START_JAM, ACTION_STOP_TO, ACTION_RE_TIMEOUT);
+                setLabels(ACTION_NONE, ACTION_STOP_TO, ACTION_RE_TIMEOUT);
                 _startTimeout();
                 finishReplace();
             }
@@ -699,12 +770,15 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         Clock pc = getClock(Clock.ID_PERIOD);
         Clock tc = getClock(Clock.ID_TIMEOUT);
 
-        if (pc.isTimeAtEnd() && !pc.isRunning() && !isInJam() && !tc.isRunning()) {
+        if (pc.isTimeAtEnd() && !pc.isRunning() && !isInJam() && !getCurrentTimeout().isRunning()) {
             setLabels(ACTION_START_JAM, ACTION_LINEUP, ACTION_TIMEOUT);
             setInPeriod(false);
             setOfficialScore(false);
             _endLineup();
+            tc.stop();
             _startIntermission();
+        } else if (!pc.isRunning() && getCurrentTimeout().isRunning()) {
+            setLabels(ACTION_NONE, ACTION_STOP_TO, ACTION_RE_TIMEOUT);
         }
     }
     private void _startJam() {
@@ -712,18 +786,17 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         Clock jc = getClock(Clock.ID_JAM);
 
         _endIntermission(false);
-        _endTimeout(false, true);
         _endLineup();
-        pc.start();
-        advanceUpcomingJam();
+        if (!getBoolean(Rule.TO_JAM) || !getCurrentTimeout().isRunning()) { pc.start(); }
         getCurrentPeriod().startJam();
         set(IN_JAM, true);
         jc.restart();
 
         getTeam(Team.ID_1).startJam();
         getTeam(Team.ID_2).startJam();
+        for (BoxTrip bt : getAll(Team.BOX_TRIP)) { bt.startJam(); }
     }
-    private void _endJam() {
+    private void _endJam(boolean timeoutFollows) {
         Clock pc = getClock(Clock.ID_PERIOD);
         Clock jc = getClock(Clock.ID_JAM);
 
@@ -737,17 +810,20 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         set(IN_JAM, false);
         getTeam(Team.ID_1).stopJam();
         getTeam(Team.ID_2).stopJam();
+        for (BoxTrip bt : getAll(Team.BOX_TRIP)) { bt.stopJam(); }
         setInOvertime(false);
 
         if (pc.isRunning()) {
             _startLineup();
-        } else {
+        } else if (!timeoutFollows) {
             _possiblyEndPeriod();
         }
         jsonSnapshotter.writeOnNextUpdate();
     }
     private void _startLineup() {
         Clock lc = getClock(Clock.ID_LINEUP);
+
+        if (lc.isRunning()) { return; }
 
         _endIntermission(false);
         setInPeriod(true);
@@ -765,12 +841,12 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
 
         if (getCurrentTimeout().isRunning()) {
             // end the previous timeout before starting a new one
-            _endTimeout(true, false);
+            _endTimeout(true);
         }
 
         if (getBoolean(Rule.STOP_PC_ON_TO)) { pc.stop(); }
         _endLineup();
-        _endJam();
+        _endJam(true);
         _endIntermission(false);
         setInPeriod(true);
         set(CURRENT_TIMEOUT, new TimeoutImpl(getCurrentPeriod().getCurrentJam()));
@@ -778,22 +854,21 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         tc.changeNumber(1);
         tc.restart();
     }
-    private void _endTimeout(boolean timeoutFollows, boolean forceClockStop) {
+    private void _endTimeout(boolean timeoutFollows) {
         Clock tc = getClock(Clock.ID_TIMEOUT);
         Clock pc = getClock(Clock.ID_PERIOD);
 
-        if (forceClockStop) { tc.stop(); }
         if (!getCurrentTimeout().isRunning()) { return; }
 
-        if (!getSetting(ScoreBoard.SETTING_CLOCK_AFTER_TIMEOUT).equals(Clock.ID_TIMEOUT)) { tc.stop(); }
         getCurrentTimeout().stop();
+        tc.stop();
         if (!timeoutFollows) {
             set(CURRENT_TIMEOUT, noTimeoutDummy);
             if (pc.isTimeAtEnd()) {
                 _possiblyEndPeriod();
             } else {
                 if (get(NO_MORE_JAM)) { pc.start(); }
-                if (getSetting(ScoreBoard.SETTING_CLOCK_AFTER_TIMEOUT).equals(Clock.ID_LINEUP)) { _startLineup(); }
+                _startLineup();
             }
         }
         jsonSnapshotter.writeOnNextUpdate();
@@ -849,18 +924,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
     }
     protected void restoreSnapshot() {
         ScoreBoardClock.getInstance().rewindTo(snapshot.getSnapshotTime());
-        if (getCurrentPeriod() != snapshot.getCurrentPeriod()) {
-            if (getCurrentPeriod().numberOf(Period.JAM) > 0) {
-                // We're undoing a period advancement. Move the upcoming Jam
-                // (and any associated Fieldings) back out before deleting the period.
-                Jam movedJam = getCurrentPeriod().getFirst(Period.JAM);
-                getCurrentPeriod().remove(Period.JAM, movedJam);
-                movedJam.setParent(this);
-                set(UPCOMING_JAM, movedJam);
-            }
-            getCurrentPeriod().delete();
-            set(CURRENT_PERIOD, snapshot.getCurrentPeriod());
-        }
+        set(CURRENT_PERIOD, snapshot.getCurrentPeriod());
         getCurrentPeriod().restoreSnapshot(snapshot.getPeriodSnapshot());
         if (getCurrentTimeout() != snapshot.getCurrentTimeout() && getCurrentTimeout() != noTimeoutDummy) {
             getCurrentTimeout().delete();
@@ -875,6 +939,12 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         for (Clock clock : getAll(CLOCK)) { clock.restoreSnapshot(snapshot.getClockSnapshot(clock.getId())); }
         for (Clock boxClock : getAll(BOX_CLOCK)) { boxClock.restoreSnapshot(snapshot.getClockSnapshot(boxClock.getId())); }
         for (Team team : getAll(TEAM)) { team.restoreSnapshot(snapshot.getTeamSnapshot(team.getId())); }
+        for (BoxTrip bt : getAll(Team.BOX_TRIP)) { bt.restoreSnapshot(snapshot.getBoxTripSnapshot(bt.getId())); };
+        for (Team team : getAll(TEAM)) {
+            for (BoxTrip bt : team.getAll(Team.BOX_TRIP)) {
+                bt.restoreSnapshot(snapshot.getBoxTripSnapshot(bt.getId()));
+            }
+        }
         for (Button button : Button.values()) { setLabel(button, snapshot.getLabels().get(button)); }
         setLabel(Button.UNDO, ACTION_NONE);
         setLabel(Button.REPLACED, snapshot.getType());
@@ -923,8 +993,25 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         }
         return true;
     }
-
     public void allowQuickClockControls(boolean allow) { quickClockAlwaysAllowed = allow; }
+
+    private void jammerBoxEntry() {
+        // start a clock
+        BoxTrip newBt = new BoxTripImpl(this);
+        add(Team.BOX_TRIP, newBt);
+        for (Team team : getAll(TEAM)) {
+            if (team.getPosition(team.isStarPass() ? FloorPosition.PIVOT : FloorPosition.JAMMER).isPenaltyBox()) {
+                Team newTeam = team.getOtherTeam();
+                Position newPosition =
+                    newTeam.getPosition(newTeam.isStarPass() ? FloorPosition.PIVOT : FloorPosition.JAMMER);
+                if (newPosition.isPenaltyBox()) {
+                    // both jammers already marked in box - let the operator resolve
+                    return;
+                }
+                newBt.add(BoxTrip.FIELDING, newPosition.getCurrentFielding()); // this will trigger jammer swap logic
+            }
+        }
+    }
 
     private String getSetting(String key) { return scoreBoard.getSettings().get(key); }
     private boolean getBooleanSetting(String key) { return Boolean.parseBoolean(scoreBoard.getSettings().get(key)); }
@@ -1069,13 +1156,20 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
     }
 
     @Override
-    public void exportDone(boolean success) {
+    public void exportDone(boolean success, String failureText) {
+        exportFailureText = failureText;
+        set(EXPORT_BLOCKED_BY, failureText);
         if (success) {
             set(LAST_FILE_UPDATE,
                 LocalDateTime.now().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
         }
         set(UPDATE_IN_PROGRESS, false);
         statsbookExporter = null;
+    }
+    @Override
+    public void clearStatsbookError() {
+        exportFailureText = "";
+        set(EXPORT_BLOCKED_BY, "");
     }
 
     public static void setQuickClockThreshold(long threshold) { quickClockThreshold = threshold; } // for unit tests
@@ -1095,6 +1189,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
 
     protected StatsbookExporter statsbookExporter;
     protected JSONStateSnapshotter jsonSnapshotter;
+    protected String exportFailureText = "";
 
     public static class GameSnapshot {
         private GameSnapshot(GameImpl g, String type) {
@@ -1114,6 +1209,11 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
             for (Clock boxClock : g.getAll(BOX_CLOCK)) { clockSnapshots.put(boxClock.getId(), boxClock.snapshot()); }
             teamSnapshots = new HashMap<>();
             for (Team team : g.getAll(TEAM)) { teamSnapshots.put(team.getId(), team.snapshot()); }
+            boxTripSnapshots = new HashMap<>();
+            for (BoxTrip bt : g.getAll(Team.BOX_TRIP)) { boxTripSnapshots.put(bt.getId(), bt.snapshot()); }
+            for (Team team : g.getAll(TEAM)) {
+                for (BoxTrip bt : team.getAll(Team.BOX_TRIP)) { boxTripSnapshots.put(bt.getId(), bt.snapshot()); }
+            }
         }
 
         public String getType() { return type; }
@@ -1128,8 +1228,9 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         public Map<Button, String> getLabels() { return labels; }
         public Map<String, Clock.ClockSnapshot> getClockSnapshots() { return clockSnapshots; }
         public Map<String, Team.TeamSnapshot> getTeamSnapshots() { return teamSnapshots; }
-        public ClockImpl.ClockSnapshot getClockSnapshot(String clock) { return clockSnapshots.get(clock); }
+        public Clock.ClockSnapshot getClockSnapshot(String clock) { return clockSnapshots.get(clock); }
         public Team.TeamSnapshot getTeamSnapshot(String team) { return teamSnapshots.get(team); }
+        public Clock.ClockSnapshot getBoxTripSnapshot(String bt) { return boxTripSnapshots.get(bt); }
 
         protected String type;
         protected long snapshotTime;
@@ -1143,6 +1244,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         protected Map<Button, String> labels;
         protected Map<String, Clock.ClockSnapshot> clockSnapshots;
         protected Map<String, Team.TeamSnapshot> teamSnapshots;
+        protected Map<String, Clock.ClockSnapshot> boxTripSnapshots;
     }
 
     static public enum Button {

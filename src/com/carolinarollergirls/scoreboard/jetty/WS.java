@@ -4,10 +4,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -48,9 +44,31 @@ import io.prometheus.client.Histogram;
 
 public class WS extends WebSocketServlet {
 
-    public WS(ScoreBoard s, JSONStateManager j) {
+    public WS(ScoreBoard s, JSONStateManager j, boolean useMetrics) {
         sb = s;
         jsm = j;
+        this.useMetrics = useMetrics;
+        if (useMetrics) {
+            connectionsActive =
+                Gauge.build().name("crg_websocket_active_connections").help("Current WebSocket connections").register();
+            messagesReceived = Counter.build()
+                                   .name("crg_websocket_messages_received")
+                                   .help("Number of WebSocket messages received")
+                                   .register();
+            messagesSentDuration = Histogram.build()
+                                       .name("crg_websocket_messages_sent_duration_seconds")
+                                       .help("Time spent sending WebSocket messages")
+                                       .register();
+            messagesSentFailures = Counter.build()
+                                       .name("crg_websocket_messages_sent_failed")
+                                       .help("Number of WebSocket messages we failed to send")
+                                       .register();
+        } else {
+            connectionsActive = null;
+            messagesReceived = null;
+            messagesSentDuration = null;
+            messagesSentFailures = null;
+        }
     }
 
     @Override
@@ -70,21 +88,12 @@ public class WS extends WebSocketServlet {
 
     private ScoreBoard sb;
     private JSONStateManager jsm;
+    private boolean useMetrics;
 
-    private static final Gauge connectionsActive =
-        Gauge.build().name("crg_websocket_active_connections").help("Current WebSocket connections").register();
-    private static final Counter messagesReceived = Counter.build()
-                                                        .name("crg_websocket_messages_received")
-                                                        .help("Number of WebSocket messages received")
-                                                        .register();
-    private static final Histogram messagesSentDuration = Histogram.build()
-                                                              .name("crg_websocket_messages_sent_duration_seconds")
-                                                              .help("Time spent sending WebSocket messages")
-                                                              .register();
-    private static final Counter messagesSentFailures = Counter.build()
-                                                            .name("crg_websocket_messages_sent_failed")
-                                                            .help("Number of WebSocket messages we failed to send")
-                                                            .register();
+    private final Gauge connectionsActive;
+    private final Counter messagesReceived;
+    private final Histogram messagesSentDuration;
+    private final Counter messagesSentFailures;
 
     public class ScoreBoardWebSocketCreator implements WebSocketCreator {
         @Override
@@ -110,7 +119,7 @@ public class WS extends WebSocketServlet {
 
         @OnWebSocketMessage
         public synchronized void onMessage(Session session, String message_data) {
-            messagesReceived.inc();
+            if (useMetrics) { messagesReceived.inc(); }
             try {
                 Map<String, Object> json = JSON.std.mapFrom(message_data);
                 String action = (String) json.get("action");
@@ -124,10 +133,10 @@ public class WS extends WebSocketServlet {
                 case "Register":
                     List<?> jsonPaths = (List<?>) json.get("paths");
                     if (jsonPaths != null) {
-                        Set<String> newPaths = new TreeSet<>();
+                        PathTrie newPaths = new PathTrie();
                         for (Object p : jsonPaths) { newPaths.add((String) p); }
-                        sendWSUpdatesForRegister(newPaths);
-                        this.paths.addAll(newPaths);
+                        sendWSUpdates(newPaths, state);
+                        this.paths.merge(newPaths);
                     }
                     break;
                 case "Set":
@@ -249,21 +258,23 @@ public class WS extends WebSocketServlet {
         }
 
         public void send(Map<String, Object> json) {
-            Histogram.Timer timer = messagesSentDuration.startTimer();
+            Histogram.Timer timer = useMetrics ? messagesSentDuration.startTimer() : null;
             try {
                 wsSession.getRemote().sendStringByFuture(
                     JSON.std.with(JSON.Feature.WRITE_NULL_PROPERTIES).composeString().addObject(json).finish());
             } catch (Exception e) {
                 Logger.printMessage("Error sending JSON update: " + e);
                 Logger.printStackTrace(e);
-                messagesSentFailures.inc();
-            } finally { timer.observeDuration(); }
+                if (useMetrics) { messagesSentFailures.inc(); }
+            } finally {
+                if (useMetrics) { timer.observeDuration(); }
+            }
         }
 
         @OnWebSocketConnect
         public void onOpen(Session session) {
             wsSession = session;
-            connectionsActive.inc();
+            if (useMetrics) { connectionsActive.inc(); }
             jsm.register(this);
             device.access();
 
@@ -282,7 +293,7 @@ public class WS extends WebSocketServlet {
 
         @OnWebSocketClose
         public void onClose(int closeCode, String message) {
-            connectionsActive.dec();
+            if (useMetrics) { connectionsActive.dec(); }
             jsm.unregister(this);
             sb.getClients().removeClient(sbClient);
 
@@ -296,93 +307,24 @@ public class WS extends WebSocketServlet {
         }
 
         // State changes from JSONStateManager.
-        @SuppressWarnings("hiding")
         @Override
-        public synchronized void sendUpdates(Map<String, Object> state, Set<String> changed) {
-            this.state = state;
-            sendWSUpdatesForPaths(paths, changed);
+        public synchronized void sendUpdates(StateTrie fullState, StateTrie changedState) {
+            this.state = fullState;
+            sendWSUpdates(paths, changedState);
         }
 
-        private void sendWSUpdatesForPaths(PathTrie watchedPaths, Set<String> changed) {
-            Map<String, Object> updates = new HashMap<>();
-            for (String k : changed) {
-                if (watchedPaths.covers(k) && !k.endsWith("Secret")) { updates.put(k, state.get(k)); }
-            }
+        private synchronized void sendWSUpdates(PathTrie registered, StateTrie updated) {
+            Map<String, Object> updates = registered.intersect(updated, true);
             if (updates.size() == 0) { return; }
             Map<String, Object> json = new HashMap<>();
             json.put("state", updates);
             send(json);
-            updates.clear();
-        }
-
-        private synchronized void sendWSUpdatesForRegister(Set<String> registeredPaths) {
-            if (registeredPaths.size() > 5) {
-                // for larger sets this is faster
-                PathTrie pt = new PathTrie();
-                pt.addAll(registeredPaths);
-                sendWSUpdatesForPaths(pt, state.keySet());
-            } else {
-                String pattern =
-                    registeredPaths.stream()
-                        .map(path -> "^" + path.replace("(", "\\(").replace(")", "\\)").replace("*", "[^)]*"))
-                        .collect(Collectors.joining("|"));
-                Pattern pat = Pattern.compile(pattern);
-                Map<String, Object> updates = new HashMap<>();
-                for (String k : state.keySet()) {
-                    if (pat.matcher(k).find() && !k.endsWith("Secret")) { updates.put(k, state.get(k)); }
-                }
-                if (updates.size() == 0) { return; }
-                Map<String, Object> json = new HashMap<>();
-                json.put("state", updates);
-                send(json);
-            }
         }
 
         protected Client sbClient;
         protected Device device;
         protected PathTrie paths = new PathTrie();
-        private Map<String, Object> state = new HashMap<>();
+        private StateTrie state = new StateTrie();
         private Session wsSession;
-    }
-
-    protected static class PathTrie {
-        boolean exists = false;
-        Map<String, PathTrie> trie = new HashMap<>();
-
-        public void addAll(Set<String> c) {
-            for (String p : c) { add(p); }
-        }
-        public void add(String path) {
-            String[] p = path.split("[.(]");
-            PathTrie head = this;
-            for (int i = 0; !head.exists && i < p.length; i++) {
-                if (head.trie.containsKey(p[i])) {
-                    head = head.trie.get(p[i]);
-                } else {
-                    PathTrie child = new PathTrie();
-                    head.trie.put(p[i], child);
-                    head = child;
-                }
-            }
-            head.exists = true;
-        }
-        public boolean covers(String p) { return _covers(p.split("[.(]"), 0); }
-        private boolean _covers(String[] p, int i) {
-            PathTrie head = this;
-            for (;; i++) {
-                if (head.exists) { return true; }
-                if (i >= p.length) { return false; }
-                // Allow Blah(*).
-                if (head.trie.containsKey("*)")) {
-                    int j;
-                    // id captured by * might contain . and thus be split - find the end
-                    for (j = i; j < p.length && !p[j].endsWith(")"); j++)
-                        ;
-                    if (head.trie.get("*)")._covers(p, j + 1)) { return true; }
-                }
-                head = head.trie.get(p[i]);
-                if (head == null) { return false; }
-            }
-        }
     }
 }

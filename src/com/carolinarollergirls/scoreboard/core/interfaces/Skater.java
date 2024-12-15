@@ -39,6 +39,7 @@ public interface Skater extends ScoreBoardEventProvider {
     public Penalty getPenalty(String num);
     public List<Penalty> getUnservedPenalties();
     public boolean hasUnservedPenalties();
+    public long getExtraPenaltyTime();
     public void mergeInto(PreparedSkater preparedSkater);
     public int getPenaltyCount(int periodNumber);
     public void setPenaltyCount(int periodNumber, int penaltyCount);
@@ -53,13 +54,17 @@ public interface Skater extends ScoreBoardEventProvider {
     public static final Value<Fielding> CURRENT_FIELDING = new Value<>(Fielding.class, "CurrentFielding", null, props);
     public static final Value<String> CURRENT_BOX_SYMBOLS = new Value<>(String.class, "CurrentBoxSymbols", "", props);
     public static final Value<String> CURRENT_PENALTIES = new Value<>(String.class, "CurrentPenalties", "", props);
+    public static final Value<Integer> PENALTY_COUNT = new Value<>(Integer.class, "PenaltyCount", 0, props);
     public static final Value<Position> POSITION = new Value<>(Position.class, "Position", null, props);
     public static final Value<Role> ROLE = new Value<>(Role.class, "Role", null, props);
     public static final Value<Role> BASE_ROLE = new Value<>(Role.class, "BaseRole", null, props);
     public static final Value<Boolean> PENALTY_BOX = new Value<>(Boolean.class, "PenaltyBox", false, props);
+    public static final Value<Boolean> HAS_UNSERVED = new Value<>(Boolean.class, "HasUnserved", false, props);
     public static final Value<String> FLAGS = new Value<>(String.class, "Flags", "", preparedProps);
     public static final Value<String> PRONOUNS = new Value<>(String.class, "Pronouns", "", preparedProps);
     public static final Value<String> COLOR = new Value<>(String.class, "Color", "", props);
+    public static final Value<String> PENALTY_DETAILS = new Value<>(String.class, "PenaltyDetails", "", props);
+    public static final Value<Long> EXTRA_PENALTY_TIME = new Value<>(Long.class, "ExtraPenaltyTime", 0L, props);
     public static final Value<Integer> PENALTY_COUNT_P1 = new Value<>(Integer.class, "PenaltyCountP1", 0, props);
     public static final Value<Integer> PENALTY_COUNT_P2 = new Value<>(Integer.class, "PenaltyCountP2", 0, props);
 

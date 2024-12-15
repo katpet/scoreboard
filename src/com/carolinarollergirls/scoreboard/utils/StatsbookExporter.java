@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.Comment;
 import org.apache.poi.ss.usermodel.CreationHelper;
@@ -109,6 +110,8 @@ public class StatsbookExporter extends Thread {
                 wb = WorkbookFactory.create(in);
                 in.close();
 
+                countJamRows();
+
                 synchronized (coreLock) { fillIgrfAndPenalties(); }
                 synchronized (coreLock) {
                     fillScoreLineupsAndClock();
@@ -125,7 +128,18 @@ public class StatsbookExporter extends Thread {
             }
             success = true;
         } catch (Exception e) { Logger.printStackTrace(e); } finally {
-            game.exportDone(success);
+            game.exportDone(success, failureText);
+        }
+    }
+
+    private void countJamRows() {
+        Sheet score = wb.getSheet("Score");
+        int row = 3;
+        for (int period = 0; period < 2; period++) {
+            int startRow = row;
+            while (score.getRow(row).getCell(0).getCellType() != CellType.FORMULA) { row++; }
+            jamRows[period] = row - startRow;
+            row += 4;
         }
     }
 
@@ -205,21 +219,45 @@ public class StatsbookExporter extends Thread {
     }
 
     private void fillExpulsionSuspensionInfo(Sheet igrf) {
-        boolean suspension = !"".equals(game.get(Game.SUSPENSIONS_SERVED));
+        int lastExpRow = 45;
+        boolean hasOrExpIndicators = false;
+
+        if ("Offical Reviews".equals(igrf.getRow(44).getCell(0).getStringCellValue())) {
+            lastExpRow = 43;
+            hasOrExpIndicators = true;
+        }
+
+        boolean hasSuspension = !"".equals(game.get(Game.SUSPENSIONS_SERVED));
         Row row = igrf.getRow(39);
-        if (suspension) { row.getCell(4).setCellValue(game.get(Game.SUSPENSIONS_SERVED)); }
+        if (hasSuspension) { row.getCell(4).setCellValue(game.get(Game.SUSPENSIONS_SERVED)); }
         int rowId = 40;
 
+        boolean hasExpulsion = false;
         for (Expulsion e : game.getAll(Game.EXPULSION)) {
-            suspension = suspension || e.get(Expulsion.SUSPENSION);
+            hasExpulsion = true;
+            hasSuspension = hasSuspension || e.get(Expulsion.SUSPENSION);
             row = igrf.getRow(rowId);
             row.getCell(0).setCellValue(e.get(Expulsion.INFO) + " " + e.get(Expulsion.EXTRA_INFO));
             row.getCell(11).setCellValue(e.get(Expulsion.SUSPENSION) ? "YES" : "NO");
 
             rowId += 2;
-            if (rowId > 45) { break; } // no more space
+            if (rowId > lastExpRow) { break; } // no more space
         }
-        igrf.getRow(6).getCell(11).setCellValue(suspension ? "YES" : "NO");
+        igrf.getRow(6).getCell(11).setCellValue(hasSuspension ? "YES" : "NO");
+
+        if (hasOrExpIndicators) {
+            row = igrf.getRow(44);
+            row.getCell(10).setCellValue(hasExpulsion ? "YES" : "NO");
+            for (Period p : game.getAll(Game.PERIOD)) {
+                for (Timeout t : p.getAll(Period.TIMEOUT)) {
+                    if (t.isReview()) {
+                        row.getCell(3).setCellValue("YES");
+                        return;
+                    }
+                }
+            }
+            row.getCell(3).setCellValue("NO");
+        }
     }
 
     private void fillIgrfOsOffsetInfo() {
@@ -485,28 +523,37 @@ public class StatsbookExporter extends Thread {
         Sheet osOffset = wb.getSheet("OS Offset");
         Sheet lineups = wb.getSheet("Lineups");
         Sheet clock = wb.getSheet("Game Clock");
+        Sheet reviews = wb.getSheet("Official Reviews");
         int[] toCols = {3, 3};
+        int[] startRowIndex = {0, jamRows[0] + 4};
 
-        for (int pn = 0; pn < game.getCurrentPeriodNumber(); pn++) {
-            int rowIndex = pn * 42;
-            fillScoreHead(score.getRow(rowIndex), pn);
-            fillLineupsHead(lineups.getRow(rowIndex), pn);
+        for (int pn = 0; pn < game.getCurrentPeriodNumber() && pn < 2; pn++) {
+            fillScoreHead(score.getRow(startRowIndex[pn]), pn);
+            fillLineupsHead(lineups.getRow(startRowIndex[pn]), pn);
 
             Period p = game.get(Game.PERIOD, pn + 1);
-            toCols = fillTimeouts(clock, toCols, p);
+            toCols = fillTimeouts(clock, reviews, toCols, p);
 
             if (p.getCurrentJam().getPeriod() != p) {
                 // period has no jams
                 continue;
             }
 
-            rowIndex += 3;
+            int rowIndex = startRowIndex[pn] + 3;
             for (int jn = 1; jn <= p.getCurrentJamNumber(); jn++) {
+                int numRows = p.getJam(jn).get(Jam.STAR_PASS) ? 2 : 1;
+                if (rowIndex + numRows - startRowIndex[pn] - 3 >= jamRows[pn]) {
+                    // sheet too short
+                    int rowsNeeded = 0;
+                    for (Jam j : p.getAll(Period.JAM)) { rowsNeeded += j.get(Jam.STAR_PASS) ? 2 : 1; }
+                    failureText =
+                        "Statsbook needs " + (rowsNeeded - jamRows[pn]) + " more row(s) in Period " + (pn + 1);
+                    throw new RuntimeException(failureText);
+                }
                 fillJam(score.getRow(rowIndex), score.getRow(rowIndex + 1), osOffset.getRow(rowIndex),
                         lineups.getRow(rowIndex), lineups.getRow(rowIndex + 1), clock.getRow(pn * 51 + jn + 9),
                         p.getJam(jn));
-                rowIndex += p.getJam(jn).get(Jam.STAR_PASS) ? 2 : 1;
-                if (rowIndex > 82 || (rowIndex > 40 && rowIndex < 45)) { break; } // end of sheet
+                rowIndex += numRows;
             }
         }
     }
@@ -523,10 +570,14 @@ public class StatsbookExporter extends Thread {
         setCell(row, 41, lt[period][1]);
     }
 
-    private int[] fillTimeouts(Sheet clockSheet, int[] toCol, Period p) {
+    private int[] fillTimeouts(Sheet clockSheet, Sheet reviewSheet, int[] toCol, Period p) {
         int[] orCol = {6, 6};
         int baseRow = p.getNumber() == 1 ? 0 : 51;
         Row[] toRows = {clockSheet.getRow(baseRow + 4), clockSheet.getRow(baseRow + 6)};
+        int reviewRow = p.getNumber() == 1 ? 3 : 20;
+        Cell reviewTotalCell = reviewSheet.getRow(reviewRow + 12).getCell(9);
+        long reviewTotalTime = 0L;
+        boolean reviewTotalTimeKnown = true;
 
         List<Timeout> timeouts = new ArrayList<>(p.getAll(Period.TIMEOUT));
         Collections.sort(timeouts, new Comparator<Timeout>() {
@@ -547,11 +598,29 @@ public class StatsbookExporter extends Thread {
                     if (orCol[i] <= 7) {
                         setCell(toRow, orCol[i], endTime);
                         if (orCol[i] == 6 && !t.isRetained()) {
-                            setCell(toRow, orCol[i], "X");
                             orCol[i]++;
+                            setCell(toRow, orCol[i], "X");
                         }
                         orCol[i]++;
                     }
+
+                    long duration = t.get(Timeout.DURATION);
+                    Row statsRow = reviewSheet.getRow(reviewRow);
+                    setCell(statsRow, 1, ((Team) t.getOwner()).get(Team.FULL_NAME));
+                    setCell(statsRow, 4, t.get(Timeout.PRECEDING_JAM_NUMBER));
+                    setCell(statsRow, 6, endTime);
+                    setCell(statsRow, 8, duration > 0L ? ClockConversion.toHumanReadable(duration) : "unknown");
+                    setCell(statsRow, 10, orCol[i] <= 7 && t.isRetained() ? "YES" : "NO");
+                    setCell(reviewSheet.getRow(reviewRow + 1), 1, t.get(Timeout.OR_REQUEST));
+                    setCell(reviewSheet.getRow(reviewRow + 2), 1, t.get(Timeout.OR_RESULT));
+
+                    if (duration > 0L) {
+                        reviewTotalTime += duration;
+                    } else {
+                        reviewTotalTimeKnown = false;
+                    }
+                    reviewRow += 3;
+
                 } else {
                     if (toCol[i] <= 5) {
                         setCell(toRow, toCol[i], endTime);
@@ -560,6 +629,9 @@ public class StatsbookExporter extends Thread {
                 }
             }
         }
+
+        reviewTotalCell.setCellValue(reviewTotalTimeKnown ? ClockConversion.toHumanReadable(reviewTotalTime)
+                                                          : "unknown");
 
         if (p.getNumber() == 1) { // cross off timeouts for P2
             for (int i = 1; i <= 2; i++) {
@@ -702,7 +774,19 @@ public class StatsbookExporter extends Thread {
         fillFielding(row, startCol, f, afterSp, false);
     }
     private void fillFielding(Row row, int startCol, Fielding f, boolean afterSp, boolean skipNumber) {
-        if (!skipNumber) { setCell(row, startCol, f.get(Fielding.SKATER_NUMBER), f.get(Fielding.ANNOTATION)); }
+        if (!skipNumber) {
+            String number = f.get(Fielding.SKATER_NUMBER);
+            String annotation = f.get(Fielding.ANNOTATION);
+            if ("n/a".equals(number)) {
+                number = "";
+                annotation = "Skated short" + ("".equals(annotation) ? "" : ("; " + annotation));
+            }
+            if ("?".equals(number)) {
+                number = "";
+                annotation = "Missed Skater number" + ("".equals(annotation) ? "" : ("; " + annotation));
+            }
+            setCell(row, startCol, number, annotation);
+        }
         String[] boxSyms =
             f.get(afterSp ? Fielding.BOX_TRIP_SYMBOLS_AFTER_S_P : Fielding.BOX_TRIP_SYMBOLS_BEFORE_S_P).split(" ");
         for (int i = 0; i < boxSyms.length; i++) {
@@ -719,6 +803,10 @@ public class StatsbookExporter extends Thread {
         boolean bAddTimeToDetails = false;
         String endTime = ClockConversion.toHumanReadable(j.get(Jam.PERIOD_CLOCK_DISPLAY_END));
 
+        if (jamRows[j.get(Jam.PERIOD_NUMBER) - 1] != 38) {
+            // extending has broken jam numbers - fix them
+            setCell(row, 0, j.getNumber());
+        }
         setCell(row, 1, j.getDuration() / 1000);
         for (Penalty pen : j.getAll(Jam.PENALTY)) {
             if (Skater.FO_EXP_ID.equals(pen.getProviderId()) && !"FO".equals(pen.getCode())) { // expulsion
@@ -825,6 +913,7 @@ public class StatsbookExporter extends Thread {
     private CellStyle strikedNum;
     private CellStyle strikedName;
     private Object coreLock;
+    private String failureText = "";
 
     // Officials names for filling sheet headers
     private String pt = "";
@@ -837,4 +926,6 @@ public class StatsbookExporter extends Thread {
 
     private Boolean hadOsOffset = false;
     private List<String> osOffsetReasons = new ArrayList<>();
+
+    private int[] jamRows = {38, 38};
 }

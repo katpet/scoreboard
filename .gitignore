@@ -6,7 +6,7 @@ release
 lib/crg-scoreboard.jar
 logs
 config/autosave
-config/*.xlsx
+**/*.xlsx
 html/stream
 html/images/teamlogo
 html/images/sponsor_banner
@@ -17,6 +17,7 @@ html/videos/fullscreen
 html/game-data
 html/custom
 !html/custom/view/example.html
+html/themes/custom
 GameData
 android/.gradle/
 android/assets/

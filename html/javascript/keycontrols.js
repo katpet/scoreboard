@@ -1,21 +1,19 @@
 var _crgKeyControls = {
   /* This selector should be used to match key control buttons. */
-  keySelector: ':button.KeyControl,label.KeyControl',
+  keySelector: '.sbKeyControl',
 
   /* Setup all key control buttons.
-   * This finds all button-type elements with the class KeyControl
+   * This finds all button-type elements with the class sbKeyControl
    * and calls setupKeyControl, using the given controlParent.
    */
   setupKeyControls: function (operator) {
-    'use strict';
     _crgKeyControls.setupKeyControl($(_crgKeyControls.keySelector), operator);
   },
   /* Destroy all key control buttons.
-   * This finds all button-type elements with the class KeyControl
+   * This finds all button-type elements with the class sbKeyControl
    * and calls destroyKeyControl.
    */
   destroyKeyControls: function () {
-    'use strict';
     _crgKeyControls.destroyKeyControl($(_crgKeyControls.keySelector));
   },
 
@@ -30,19 +28,21 @@ var _crgKeyControls = {
    * destroyed and then re-setup.
    *
    * CSS notes:
-   * key control buttons have the class KeyControl
+   * key control buttons have the class sbKeyControl
    * there are new span elements added, which are button>span>span
    * the new span elements (under the child span) have the class Indicator
    * the span.Indicator element that stores the control key has class Key
-   * when there is a control key the button has class HasControlKey
+   * when there is a control key the button has class sbHasControlKey
    */
   setupKeyControl: function (button, operator) {
-    'use strict';
     _crgKeyControls._start(operator);
     _crgKeyControls
       .destroyKeyControl(button)
-      .addClass('KeyControl')
+      .addClass('sbKeyControl')
       .on('mouseenter mouseleave', _crgKeyControls._hoverFunction)
+      .not(':has(>span)')
+      .wrapInner('<span>')
+      .end()
       .children('span')
       .append($('<span>').text(' [').addClass('Indicator'))
       .append($('<span>').addClass('Key Indicator'))
@@ -50,9 +50,9 @@ var _crgKeyControls = {
       .end()
       .each(function () {
         var btn = $(this);
-        var prop = 'ScoreBoard.Settings.Setting(ScoreBoard.Operator__' + operator + '.KeyControl.' + btn.attr('id') + ')';
+        var prop = 'ScoreBoard.Settings.Setting(ScoreBoard.Operator.' + operator + '.KeyControl.' + btn.attr('id') + ')';
         var key = WS.state[prop];
-        btn.attr('_crgKeyControls_prop', prop).toggleClass('HasControlKey', key ? true : false);
+        btn.attr('_crgKeyControls_prop', prop).toggleClass('sbHasControlKey', key ? true : false);
         btn
           .find('span.Key')
           .attr('data-keycontrol', String(key ? key.charCodeAt(0) : ''))
@@ -61,7 +61,6 @@ var _crgKeyControls = {
     return button;
   },
   _hoverFunction: function (event) {
-    'use strict';
     $(this).toggleClass('hover', event.type === 'mouseenter');
   },
 
@@ -69,10 +68,9 @@ var _crgKeyControls = {
    * This undoes the key control setup. If destroyButton
    * is true, is destroys the jQuery-UI button.
    * It returns the button element.
-   * Note this does not remove the KeyControl class from the button.
+   * Note this does not remove the sbKeyControl class from the button.
    */
   destroyKeyControl: function (button) {
-    'use strict';
     button.attr('_crgKeyControls_prop', false);
     button.off('mouseenter mouseleave', _crgKeyControls._hoverFunction);
     button.find('span.Indicator').remove();
@@ -93,39 +91,31 @@ var _crgKeyControls = {
    * CSS note: buttons in edit mode have the class 'Editing'.
    */
   editKeys: function (edit) {
-    'use strict';
     $(_crgKeyControls.keySelector).toggleClass('Editing', edit);
   },
 
   addCondition: function (condition) {
-    'use strict';
     _crgKeyControls._conditions.push(condition);
   },
   _conditions: [
     function () {
-      'use strict';
       return !$('div.MultipleKeyAssignDialog').length;
     },
-    function () {
-      'use strict';
-      return !$('#TeamTimeTab:hidden').length;
-    }, //disable keys when Controls Tab is hidden.
   ],
 
   _start: function (operator) {
-    'use strict';
     _crgKeyControls.operator = operator;
     if (!_crgKeyControls._keyControlStarted) {
       $(document).on('keypress', _crgKeyControls._keyControlPress);
       $(document).on('keydown', _crgKeyControls._keyControlDown);
 
-      WS.Register('ScoreBoard.Settings.Setting(ScoreBoard.*)', function (k, v) {
-        if (!k.startsWith('ScoreBoard.Settings.Setting(ScoreBoard.Operator__' + _crgKeyControls.operator + '.KeyControl.')) {
+      WS.Register('ScoreBoard.Settings.Setting(ScoreBoard.Operator.*)', function (k, v) {
+        if (!k.startsWith('ScoreBoard.Settings.Setting(ScoreBoard.Operator.' + _crgKeyControls.operator + '.KeyControl.')) {
           return;
         }
-        var button = $('#' + k.substring(k.lastIndexOf('.') + 1, k.length - 1));
+        var button = $('#' + k.Setting.split('.')[4]);
         button
-          .toggleClass('HasControlKey', v ? true : false)
+          .toggleClass('sbHasControlKey', v ? true : false)
           .find('span.Key')
           .text(v ? v : '')
           .attr('data-keycontrol', String(v ? v.charCodeAt(0) : ''));
@@ -137,17 +127,15 @@ var _crgKeyControls = {
   _operator: '',
 
   _checkConditions: function () {
-    'use strict';
     var ok = true;
     $.each(_crgKeyControls._conditions, function () {
-      if (ok && $.isFunction(this) && !this()) {
+      if (ok && typeof this === 'function' && !this()) {
         ok = false;
       }
     });
     return ok;
   },
   _validKey: function (keycode) {
-    'use strict';
     /* For reference see http://en.wikipedia.org/wiki/List_of_Unicode_characters */
     if (keycode < 0x20) {
       // Low control chars
@@ -162,7 +150,6 @@ var _crgKeyControls = {
   _existingKeyLast: undefined,
   _existingKeyCount: 0,
   _keyControlPress: function (event) {
-    'use strict';
     if (!_crgKeyControls._checkConditions()) {
       return;
     }
@@ -177,14 +164,7 @@ var _crgKeyControls = {
     var editing = controls.filter('.Editing');
 
     // Perform the corresponding button's action
-    var target = active.has('span.Key[data-keycontrol="' + event.which + '"]').trigger('click');
-    // FIXME - workaround seemingly broken jQuery-UI
-    // which does not fire change event for radio buttons when click() is called on their label...
-    if (target.is('label')) {
-      target.filter('label').each(function () {
-        $('#' + $(this).attr('for')).trigger('change');
-      });
-    }
+    active.has('span.Key[data-keycontrol="' + event.which + '"]').trigger('click');
 
     // Update the hovered button if in edit mode
     var editingTarget = editing.filter('.hover');
@@ -209,7 +189,6 @@ var _crgKeyControls = {
     }
   },
   _keyControlDown: function (event) {
-    'use strict';
     if (!_crgKeyControls._checkConditions()) {
       return;
     }
@@ -225,11 +204,9 @@ var _crgKeyControls = {
     }
   },
   _clearKey: function (targets) {
-    'use strict';
     _crgKeyControls._setKey(targets, '');
   },
   _setKey: function (targets, key) {
-    'use strict';
     targets.each(function () {
       var prop = $(this).attr('_crgKeyControls_prop');
       if (prop) {
@@ -238,7 +215,6 @@ var _crgKeyControls = {
     });
   },
   _showMultipleKeyAssignDialog: function (existing, target, key) {
-    'use strict';
     var div = $('<div>').addClass('MultipleKeyAssignDialog');
     var n = existing.filter(':not(.Hidden)').length;
     var s = n === 1 ? '' : 's';
