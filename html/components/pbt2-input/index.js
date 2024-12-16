@@ -287,7 +287,7 @@ function setupCallbacks() {
 
   WS.Register(
     [
-      'ScoreBoard.CurrentGame.Team(*).Color(operator_fg)'
+      'ScoreBoard.CurrentGame.Team(*).Color(operator.fg)'
     ],
     function (k, v) {
       $('.Color.Team' + k.Team).css("color", v);
@@ -296,7 +296,7 @@ function setupCallbacks() {
 
   WS.Register(
     [
-      'ScoreBoard.CurrentGame.Team(*).Color(operator_bg)'
+      'ScoreBoard.CurrentGame.Team(*).Color(operator.bg)'
     ],
     function (k, v) {
       $('.Color.Team' + k.Team).css("background-color", v);
@@ -310,6 +310,7 @@ function setupCallbacks() {
       'ScoreBoard.CurrentGame.Clock(Jam).Running',
     ],
     function (k, v) {
+      console.log(k);
       var running = isTrue(WS.state['ScoreBoard.CurrentGame.BoxClock(' + k.BoxClock + ').Running']);
       if(running) {
         if(v <= 10000) {

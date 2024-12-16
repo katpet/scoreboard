@@ -55,7 +55,7 @@ public class BoxSeatImplTests {
     @Before
     public void setUp() throws Exception {
         GameImpl.setQuickClockThreshold(0L);
-        sb = new ScoreBoardImpl();
+        sb = new ScoreBoardImpl(false);
         sb.postAutosaveUpdate();
         g = sb.getCurrentGame().get(CurrentGame.GAME);
         pc = g.getClock(Clock.ID_PERIOD);
