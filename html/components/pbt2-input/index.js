@@ -310,7 +310,6 @@ function setupCallbacks() {
       'ScoreBoard.CurrentGame.Clock(Jam).Running',
     ],
     function (k, v) {
-      console.log(k);
       var running = isTrue(WS.state['ScoreBoard.CurrentGame.BoxClock(' + k.BoxClock + ').Running']);
       if(running) {
         if(v <= 10000) {
