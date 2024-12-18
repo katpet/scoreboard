@@ -293,7 +293,7 @@ public class BoxSeatImpl extends ScoreBoardEventProviderImpl<BoxSeat> implements
                         numPenalties = 1;
                         if(f.getCurrentBoxTrip() != null) {
                             f.getCurrentBoxTrip().end();
-                            f.getCurrentBoxTrip().delete();
+                            f.getCurrentBoxTrip().setIsCurrent(false);
                         }
                    }
                 }

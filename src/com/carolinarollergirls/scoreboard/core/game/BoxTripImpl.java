@@ -385,6 +385,7 @@ public class BoxTripImpl extends ScoreBoardEventProviderImpl<BoxTrip> implements
     public void restart() {
         set(WALLTIME_START, ScoreBoardClock.getInstance().getCurrentWalltime());
         set(PERIOD_NUMBER, game.getCurrentPeriodNumber());
+        set(IS_CURRENT, true);
     }
 
     @Override
@@ -533,6 +534,10 @@ public class BoxTripImpl extends ScoreBoardEventProviderImpl<BoxTrip> implements
     @Override
     public void setPenaltyCount(int count) {
         set(PENALTY_COUNT, count);
+    }
+    @Override
+    public void setIsCurrent(Boolean isCurrent) {
+        set(IS_CURRENT, isCurrent);
     }
 
     private Game game;

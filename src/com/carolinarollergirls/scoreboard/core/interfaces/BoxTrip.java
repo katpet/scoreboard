@@ -36,6 +36,7 @@ public interface BoxTrip extends ScoreBoardEventProvider {
     public int getPeriodNumber();
     public int getPenaltyCount();
     public void setPenaltyCount(int count);
+    public void setIsCurrent(Boolean isCurrent);
 
     public static Collection<Property<?>> props = new ArrayList<>();
 
