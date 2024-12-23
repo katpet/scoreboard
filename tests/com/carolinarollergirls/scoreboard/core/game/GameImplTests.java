@@ -526,7 +526,7 @@ public class GameImplTests {
         jc.setTime(45000);
         assertEquals(22, jc.getNumber());
         assertTrue(lc.isRunning());
-        assertFalse(tc.isRunning());
+        assertTrue(tc.isRunning());
         assertFalse(ic.isRunning());
 
         g.startJam();
@@ -752,13 +752,18 @@ public class GameImplTests {
         assertFalse(jc.isRunning());
         assertTrue(lc.isRunning());
         assertTrue(lc.isTimeAtStart());
-        assertFalse(tc.isRunning());
+        assertTrue(tc.isRunning());
         assertEquals(4, tc.getNumber());
         assertFalse(ic.isRunning());
-        assertEquals(Timeout.Owners.NONE, g.getTimeoutOwner());
-        assertFalse(g.isOfficialReview());
+        assertEquals(Timeout.Owners.OTO, g.getTimeoutOwner());
+        assertTrue(g.isOfficialReview());
         checkLabels(Game.ACTION_START_JAM, Game.ACTION_NONE, Game.ACTION_TIMEOUT,
                     Game.UNDO_PREFIX + Game.ACTION_STOP_TO);
+
+        g.startJam();
+
+        assertEquals(Timeout.Owners.NONE, g.getTimeoutOwner());
+        assertFalse(g.isOfficialReview());
     }
 
     @Test
@@ -966,14 +971,14 @@ public class GameImplTests {
 
     @Test
     public void testTimeout_fromTimeout() {
+        g.setTimeoutType(Timeout.Owners.OTO, false);
+        tc.setTime(24000);
+        tc.setNumber(7);
         assertFalse(pc.isRunning());
         assertFalse(jc.isRunning());
         assertFalse(lc.isRunning());
-        tc.start();
-        tc.setTime(24000);
-        tc.setNumber(7);
+        assertTrue(tc.isRunning());
         assertFalse(ic.isRunning());
-        g.setTimeoutOwner(Timeout.Owners.OTO);
 
         g.timeout();
 
@@ -1688,7 +1693,7 @@ public class GameImplTests {
         assertFalse(pc.isRunning());
         assertFalse(jc.isRunning());
         assertTrue(lc.isRunning());
-        assertFalse(tc.isRunning());
+        assertFalse(g.getCurrentTimeout().isRunning());
         assertFalse(ic.isRunning());
         checkLabels(Game.ACTION_START_JAM, Game.ACTION_NONE, Game.ACTION_TIMEOUT,
                     Game.UNDO_PREFIX + Game.ACTION_STOP_TO);

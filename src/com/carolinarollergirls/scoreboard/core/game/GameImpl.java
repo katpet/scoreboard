@@ -693,8 +693,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
     public void timeout() {
         synchronized (coreLock) {
             if (!isOfficialScore() && !quickClockControl(Button.TIMEOUT)) {
-                Clock tc = getClock(Clock.ID_TIMEOUT);
-                if (tc.isRunning()) {
+                if (getCurrentTimeout().isRunning()) {
                     createSnapshot(ACTION_RE_TIMEOUT);
                 } else {
                     createSnapshot(ACTION_TIMEOUT);
@@ -761,16 +760,22 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
             setOfficialScore(false);
             _endLineup();
             tc.stop();
+            set(CURRENT_TIMEOUT, noTimeoutDummy);
             _startIntermission();
         }
     }
     private void _startJam() {
         Clock pc = getClock(Clock.ID_PERIOD);
         Clock jc = getClock(Clock.ID_JAM);
+        Clock tc = getClock(Clock.ID_TIMEOUT);
 
         _endIntermission(false);
         _endLineup();
         if (!getBoolean(Rule.TO_JAM) || !getCurrentTimeout().isRunning()) { pc.start(); }
+        if (!getCurrentTimeout().isRunning()) {
+            tc.stop();
+            set(CURRENT_TIMEOUT, noTimeoutDummy);
+        }
         getCurrentPeriod().startJam();
         set(IN_JAM, true);
         jc.restart();
@@ -844,9 +849,11 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         if (!getCurrentTimeout().isRunning()) { return; }
 
         getCurrentTimeout().stop();
-        tc.stop();
-        if (!timeoutFollows) {
+        if (!getBoolean(Rule.NO_TO_CLOCK_STOP) || pc.isRunning()) {
+            tc.stop();
             set(CURRENT_TIMEOUT, noTimeoutDummy);
+        }
+        if (!timeoutFollows) {
             if (pc.isTimeAtEnd()) {
                 _possiblyEndPeriod();
             } else {
@@ -909,10 +916,8 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         if (getCurrentTimeout() != snapshot.getCurrentTimeout() && getCurrentTimeout() != noTimeoutDummy) {
             getCurrentTimeout().delete();
         }
-        if (getCurrentTimeout() != snapshot.getCurrentTimeout() && snapshot.getCurrentTimeout() != noTimeoutDummy) {
-            snapshot.getCurrentTimeout().set(Timeout.RUNNING, true);
-        }
         set(CURRENT_TIMEOUT, snapshot.getCurrentTimeout());
+        getCurrentTimeout().set(Timeout.RUNNING, snapshot.inTimeout());
         setInOvertime(snapshot.inOvertime());
         set(IN_JAM, snapshot.inJam());
         setInPeriod(snapshot.inPeriod());
@@ -960,11 +965,9 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         long currentTime = ScoreBoardClock.getInstance().getCurrentTime();
         long lastTime = lastButtonTime;
         boolean differentButton = button != lastButton;
-        boolean canReplace =
-            snapshot != null &&
-            !(button == Button.START && (snapshot.inJam() || snapshot.getCurrentTimeout().isRunning())) &&
-            !(button == Button.STOP && snapshot.getClockSnapshot(Clock.ID_LINEUP).isRunning() &&
-              !snapshot.getCurrentTimeout().isRunning());
+        boolean canReplace = snapshot != null && !(button == Button.START && snapshot.inJam()) &&
+                             !(button == Button.STOP && snapshot.getClockSnapshot(Clock.ID_LINEUP).isRunning() &&
+                               !snapshot.getCurrentTimeout().isRunning());
         lastButton = button;
         lastButtonTime = currentTime;
         if (replacePending != null || currentTime - lastTime >= quickClockThreshold) { return false; }
@@ -990,7 +993,8 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
                     // both jammers already marked in box - let the operator resolve
                     return;
                 }
-                newBt.add(BoxTrip.FIELDING, newPosition.getCurrentFielding()); // this will trigger jammer swap logic
+                newBt.add(BoxTrip.FIELDING,
+                          newPosition.getCurrentFielding()); // this will trigger jammer swap logic
             }
         }
     }
@@ -1001,7 +1005,9 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
     public String getLabel(Button button) { return get(LABEL, button.toString()).getValue(); }
     public void setLabel(Button button, String label) { add(LABEL, new ValWithId(button.toString(), label)); }
     protected void setLabels() {
-        setLabel(Button.START, isInJam() || getCurrentTimeout().isRunning() ? ACTION_NONE : ACTION_START_JAM);
+        setLabel(Button.START, isInJam() || (getCurrentTimeout().isRunning() && !getBoolean(Rule.TO_JAM))
+                                   ? ACTION_NONE
+                                   : ACTION_START_JAM);
         setLabel(Button.STOP, isInJam()                               ? ACTION_STOP_JAM
                               : getCurrentTimeout().isRunning()       ? ACTION_STOP_TO
                               : getClock(Clock.ID_LINEUP).isRunning() ? ACTION_NONE
@@ -1185,6 +1191,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
             inSuddenScoring = g.isInSuddenScoring();
             inJam = g.isInJam();
             inPeriod = g.isInPeriod();
+            inTimeout = g.getCurrentTimeout().isRunning();
             currentPeriod = g.getCurrentPeriod();
             periodSnapshot = g.getCurrentPeriod().snapshot();
             clockSnapshots = new HashMap<>();
@@ -1204,6 +1211,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         public boolean inOvertime() { return inOvertime; }
         public boolean inSuddenScoring() { return inSuddenScoring; }
         public boolean inJam() { return inJam; }
+        public boolean inTimeout() { return inTimeout; }
         public boolean inPeriod() { return inPeriod; }
         public Period getCurrentPeriod() { return currentPeriod; }
         public PeriodSnapshot getPeriodSnapshot() { return periodSnapshot; }
@@ -1219,6 +1227,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         protected boolean inOvertime;
         protected boolean inSuddenScoring;
         protected boolean inJam;
+        protected boolean inTimeout;
         protected boolean inPeriod;
         protected Period currentPeriod;
         protected PeriodSnapshot periodSnapshot;
