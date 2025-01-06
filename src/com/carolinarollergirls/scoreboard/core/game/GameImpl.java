@@ -822,6 +822,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
         Clock lc = getClock(Clock.ID_LINEUP);
 
         lc.stop();
+        lc.set(Clock.NAME, "Lineup");
     }
     private void _startTimeout() {
         Clock pc = getClock(Clock.ID_PERIOD);
@@ -845,6 +846,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
     private void _endTimeout(boolean timeoutFollows) {
         Clock tc = getClock(Clock.ID_TIMEOUT);
         Clock pc = getClock(Clock.ID_PERIOD);
+        Clock lc = getClock(Clock.ID_LINEUP);
 
         if (!getCurrentTimeout().isRunning()) { return; }
 
@@ -859,6 +861,7 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
             } else {
                 if (get(NO_MORE_JAM)) { pc.start(); }
                 _startLineup();
+                lc.set(Clock.NAME, "Post Timeout");
             }
         }
         jsonSnapshotter.writeOnNextUpdate();
