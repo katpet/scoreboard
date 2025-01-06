@@ -184,6 +184,6 @@ public interface Game extends ScoreBoardEventProvider {
     public static final String ACTION_LINEUP = "Lineup";
     public static final String ACTION_TIMEOUT = "Timeout";
     public static final String ACTION_RE_TIMEOUT = "New Timeout";
-    public static final String ACTION_OVERTIME = "Overtime";
+    public static final String ACTION_OVERTIME = "Overtime Lineup";
     public static final String UNDO_PREFIX = "Un-";
 }
