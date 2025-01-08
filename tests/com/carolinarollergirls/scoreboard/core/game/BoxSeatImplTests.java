@@ -162,7 +162,7 @@ public class BoxSeatImplTests {
         // Test that the count goes from 2 to 4 for a double penalty
         bs2.setBoxSkater(s1_t1_id);
         bs2.startBox();
-        bs2.setBoxTimeChange(g.getLong(Rule.PENALTIES_DURATION)/1000); // expects seconds
+        bs2.setBoxTimeChange(g.getLong(Rule.PENALTY_DURATION)/1000); // expects seconds
         Fielding f3 = t1.getPosition(bs2.getFloorPosition()).getCurrentFielding();
         assertEquals(f3 != null, true);
         bs2.endBox();
@@ -171,8 +171,8 @@ public class BoxSeatImplTests {
         // Test that adding and then removing time doesn't double the penalty
         bs2.setBoxSkater(s1_t1_id);
         bs2.startBox();
-        bs2.setBoxTimeChange(g.getLong(Rule.PENALTIES_DURATION)/1000);
-        bs2.setBoxTimeChange(g.getLong(Rule.PENALTIES_DURATION)/-1000);
+        bs2.setBoxTimeChange(g.getLong(Rule.PENALTY_DURATION)/1000);
+        bs2.setBoxTimeChange(g.getLong(Rule.PENALTY_DURATION)/-1000);
         Fielding f4 = t1.getPosition(bs2.getFloorPosition()).getCurrentFielding();
         assertEquals(f4 != null, true);
         bs2.endBox();
@@ -201,7 +201,7 @@ public class BoxSeatImplTests {
         bs1.resetBox();
         assertEquals(bs1.getSkater(), null);
         assertEquals(bs1.getBoxClock().isRunning(), false);
-        assertEquals(bs1.getBoxClock().getMaximumTime(), g.getLong(Rule.PENALTIES_DURATION));
+        assertEquals(bs1.getBoxClock().getMaximumTime(), g.getLong(Rule.PENALTY_DURATION));
     }
 
     @Test
@@ -215,7 +215,7 @@ public class BoxSeatImplTests {
         // Wait a few milliseconds for the box clocks to update
         ScoreBoardClock.getInstance().advance(1000);
         // Starting second jammer's clock should cause stopping and resetting first jammer's clock
-        assertEquals(bs0_t1.getBoxClock().getTime(), g.getLong(Rule.PENALTIES_DURATION));
+        assertEquals(bs0_t1.getBoxClock().getTime(), g.getLong(Rule.PENALTY_DURATION));
         assertEquals(bs0_t1.getBoxClock().isRunning(), false);
         assertEquals(bs0_t2.getBoxClock().isRunning(), true);
     }

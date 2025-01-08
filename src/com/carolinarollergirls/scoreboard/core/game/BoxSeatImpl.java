@@ -129,7 +129,7 @@ public class BoxSeatImpl extends ScoreBoardEventProviderImpl<BoxSeat> implements
             if(bs.getFloorPosition() == FloorPosition.JAMMER) {
                 Clock otherClock = bs.getBoxClock();
                 if(otherClock != null && (otherClock.isRunning() || bs.started())) {
-                    long penaltyDuration = team.getGame().getLong(Rule.PENALTIES_DURATION);
+                    long penaltyDuration = team.getGame().getLong(Rule.PENALTY_DURATION);
                     long otherMaximum = otherClock.getMaximumTime();
                     long thisMaximum = pc.getMaximumTime();
                     long otherTime = otherClock.getTime();
@@ -231,7 +231,7 @@ public class BoxSeatImpl extends ScoreBoardEventProviderImpl<BoxSeat> implements
         synchronized (coreLock) {
             Clock pc = getBoxClock();
             pc.resetTime();
-            long penaltyDuration = team.getGame().getLong(Rule.PENALTIES_DURATION);
+            long penaltyDuration = team.getGame().getLong(Rule.PENALTY_DURATION);
             pc.setMaximumTime(penaltyDuration);
         }
         setWallStartTime(0);
@@ -294,6 +294,7 @@ public class BoxSeatImpl extends ScoreBoardEventProviderImpl<BoxSeat> implements
                         if(f.getCurrentBoxTrip() != null) {
                             f.getCurrentBoxTrip().end();
                             f.getCurrentBoxTrip().setIsCurrent(false);
+                            f.set(Fielding.CURRENT_BOX_TRIP, null);
                         }
                    }
                 }
@@ -360,7 +361,7 @@ public class BoxSeatImpl extends ScoreBoardEventProviderImpl<BoxSeat> implements
         Clock bc = getBoxClock();
         long ms = secs*1000;
         long newtime = bc.getTime() + ms;
-        long penaltyDuration = team.getGame().getLong(Rule.PENALTIES_DURATION);
+        long penaltyDuration = team.getGame().getLong(Rule.PENALTY_DURATION);
         long maxtime = bc.getMaximumTime();
         if(newtime > maxtime) {
             bc.setMaximumTime(newtime);
@@ -377,7 +378,7 @@ public class BoxSeatImpl extends ScoreBoardEventProviderImpl<BoxSeat> implements
         // increment or decrement the box trip's penalty count.
         // If box trip doesn't exist yet (skater hasn't been selected yet)
         // do this based on the max time when the the box trip does start.
-        long penaltyDuration = team.getGame().getLong(Rule.PENALTIES_DURATION);
+        long penaltyDuration = team.getGame().getLong(Rule.PENALTY_DURATION);
         if(amount == penaltyDuration || amount == penaltyDuration*(-1)) {
             if(amount < 0) {
                 numPenalties -= 1;

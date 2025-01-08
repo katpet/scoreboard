@@ -147,7 +147,7 @@ public class ClockImpl extends ScoreBoardEventProviderImpl<Clock> implements Clo
                     setMaximumTime(game.getLong(Rule.LINEUP_DURATION));
                 }
             } else if(isBoxClock) {
-                setMaximumTime(game.getLong(Rule.PENALTIES_DURATION));
+                setMaximumTime(game.getLong(Rule.PENALTY_DURATION));
             } else {
                 setMaximumTime(DEFAULT_MAXIMUM_TIME);
             }
