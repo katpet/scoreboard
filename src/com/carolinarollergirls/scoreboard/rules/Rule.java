@@ -35,10 +35,10 @@ public enum Rule {
     TTO_DURATION(new TimeRule("Timeout.TeamTODuration", "Duration of a team timeout", "1:00")),
     TIMEOUT_DIRECTION(new BooleanRule("Timeout.ClockDirection", "Which way should the timeout clock count?", false,
                                       "Count Down", "Count Up")),
-    STOP_PC_ON_TO(new BooleanRule(
-        "Timeout.StopPeriodClockAlways",
-        "Stop the period clock on every timeout? If false, the options below control the behaviour per type of timeout.",
-        true, "True", "False")),
+    STOP_PC_ON_TO(new BooleanRule("Timeout.StopPeriodClockAlways",
+                                  "Stop the period clock on every timeout? If false, the options below control the " +
+                                  "behaviour per type of timeout.",
+                                  true, "True", "False")),
     STOP_PC_ON_OTO(new BooleanRule("Timeout.StopPeriodClockOnOTO", "Stop the period clock on official timeouts?", false,
                                    "True", "False")),
     STOP_PC_ON_TTO(new BooleanRule("Timeout.StopPeriodClockOnTTO", "Stop the period clock on team timeouts?", false,
@@ -53,6 +53,9 @@ public enum Rule {
         false, "True", "False")),
     TO_JAM(new BooleanRule("Timeout.JamDuring", "Allow a jam to happen with stopped period clock?", false, "True",
                            "False")),
+    NO_TO_CLOCK_STOP(new BooleanRule("Timeout.NoClockStop",
+                                     "Should the timeout clock continue to run after the end of a timeout?", true,
+                                     "True", "False")),
 
     INTERMISSION_DURATIONS(new StringRule(
         "Intermission.Durations",
@@ -70,23 +73,23 @@ public enum Rule {
                                        "Are official reviews granted per period or per game?", true, "Period", "Game")),
     NUMBER_RETAINS(new IntegerRule("Team.MaxRetains",
                                    "How many times per game or period a team can retain an official review", 1)),
-    RDCL_PER_HALF_RULES(new BooleanRule(
-        "Team.RDCLPerHalfRules",
-        "Restrict one TTO to the first two periods and one to the rest of the game. Stretch per period ORs to first two resp. all other periods.",
-        false, "Enabled", "Disabled")),
-    WFTDA_LATE_SCORE_RULE(new BooleanRule(
-        "Score.WftdaLateChangeRule",
-        "Score changes after the end of the following jam don't affect the game score. With less than 2 minutes left in the game this applies to changes after the next jam starts.",
-        true, "Enabled", "Disabled")),
+    RDCL_PER_HALF_RULES(new BooleanRule("Team.RDCLPerHalfRules",
+                                        "Restrict one TTO to the first two periods and one to the rest of the game. " +
+                                        "Stretch per period ORs to first two resp. all other periods.",
+                                        false, "Enabled", "Disabled")),
+    WFTDA_LATE_SCORE_RULE(
+        new BooleanRule("Score.WftdaLateChangeRule",
+                        "Score changes after the end of the following jam don't affect the game score. With less " +
+                        "than 2 minutes left in the game this applies to changes after the next jam starts.",
+                        true, "Enabled", "Disabled")),
 
     PENALTIES_FILE(new StringRule("Penalties.DefinitionFile",
                                   "File that contains the penalty code definitions to be used",
                                   "/config/penalties/wftda2018.json")),
-    PENALTIES_DURATION(new TimeRule("Penalties.Duration", "Duration of penalty", "0:30")),
-    FO_LIMIT(new IntegerRule(
-        "Penalties.NumberToFoulout",
-        "After how many penalties a skater has fouled out of the game. Note that the software currently does not support more than 9 penalties per skater.",
-        7)),
+    FO_LIMIT(new IntegerRule("Penalties.NumberToFoulout",
+                             "After how many penalties a skater has fouled out of the game. Note that the software " +
+                             "currently does not support more than 9 penalties per skater.",
+                             7)),
     PENALTY_DURATION(new TimeRule("Penalties.Duration", "How long does a penalty last.", "0:30"));
 
     private Rule(RuleDefinition r) { rule = r; }

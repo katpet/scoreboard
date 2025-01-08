@@ -20,11 +20,14 @@ function sbClockSelect(k) {
   var jam = isTrue(WS.state[k.upTo('Game') + '.InJam']);
   var timeout = isTrue(WS.state[k.upTo('Game') + '.Clock(Timeout).Running']);
   var lineup = isTrue(WS.state[k.upTo('Game') + '.Clock(Lineup).Running']);
+  var secondLineup = lineup && timeout;
   var intermission = isTrue(WS.state[k.upTo('Game') + '.Clock(Intermission).Running']);
 
   var clock = 'NoClock';
   if (jam) {
     clock = 'Jam';
+  } else if (secondLineup) {
+    clock = "SecondLineup"
   } else if (lineup) {
     clock = 'Lineup';
   } else if (timeout) {
