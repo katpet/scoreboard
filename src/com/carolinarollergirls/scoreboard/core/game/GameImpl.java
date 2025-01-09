@@ -510,6 +510,11 @@ public class GameImpl extends ScoreBoardEventProviderImpl<Game> implements Game 
     @Override
     public void execute(Command prop, Source source) {
         if (prop == START_JAM) {
+            if(getBoolean(Rule.STOP_TO_ON_JAM_START) && getCurrentTimeout() != null && getCurrentTimeout().isRunning()) {
+                // When rule to stop timeout on jam start is enabled, set the current timeout to not running;
+                // it actually gets stopped in _startJam.
+                getCurrentTimeout().set(Timeout.RUNNING, false);
+            }
             startJam();
         } else if (prop == STOP_JAM) {
             stopJamTO();

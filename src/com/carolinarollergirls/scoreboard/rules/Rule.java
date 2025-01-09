@@ -56,6 +56,8 @@ public enum Rule {
     NO_TO_CLOCK_STOP(new BooleanRule("Timeout.NoClockStop",
                                      "Should the timeout clock continue to run after the end of a timeout?", true,
                                      "True", "False")),
+    STOP_TO_ON_JAM_START(new BooleanRule("Timeout.StopTOOnJamStart", "Automatically stop a timeout that was running when a new jam is started.",
+                                        false, "True", "False")),
 
     INTERMISSION_DURATIONS(new StringRule(
         "Intermission.Durations",
